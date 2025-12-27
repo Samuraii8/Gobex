@@ -4,8 +4,8 @@ const app = express();
 
 app.use(express.json());
 
-// Serve static files from the "public" directory
-app.use(express.static(path.join(__dirname, '../public')));
+// Serve static files from the "public/images" directory under the "/images" route
+app.use('/images', express.static(path.join(__dirname, '../public/images')));
 
 // Simple route for testing
 app.get('/', (req, res) => {
