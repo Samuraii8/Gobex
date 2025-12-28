@@ -15,7 +15,6 @@ app.get('/', (req, res) => {
 const anaSayfaRoutes = require('./routes/anaSayfaRoutes');
 app.use('/api/anasayfa', anaSayfaRoutes);
 
-<<<<<<< HEAD
 const galeriRoutes = require('./routes/galeriRoutes');
 app.use('/api/galeri', galeriRoutes);
 
