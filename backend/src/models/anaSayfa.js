@@ -17,7 +17,7 @@ module.exports = (sequelize, DataTypes) => {
     İD: {
       type: DataTypes.INTEGER,
       primaryKey: true,
-      autoIncrement: true
+      autoIncrement: false
     },
     Başlık: {
       type: DataTypes.STRING,
