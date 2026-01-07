@@ -3,39 +3,38 @@ const {
   Model
 } = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
-  class AnaSayfa extends Model {
-    /**
-     * Helper method for defining associations.
-     * This method is not a part of Sequelize lifecycle.
-     * The `models/index` file will call this method automatically.
-     */
+  class Hizmetler extends Model {
     static associate(models) {
       // define association here
     }
   }
-  AnaSayfa.init({
+  Hizmetler.init({
     İD: {
       type: DataTypes.INTEGER,
       primaryKey: true,
-      autoIncrement: true //true kalmalı burası!!!
+      autoIncrement: true
     },
-    Başlık: {
+    Hizmet_adı: {
       type: DataTypes.STRING,
       allowNull: false
     },
-    İçerik: {
+    Hizmet_açıklaması: {
       type: DataTypes.TEXT,
-      allowNull: false
+      allowNull: true
     },
-    Resim: {
+    Hizmet_Kategorisi: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    Hizmet_resim: {
       type: DataTypes.STRING,
       allowNull: true
     }
   }, {
     sequelize,
-    modelName: 'AnaSayfa',
-    tableName: 'Tbl_AnaSayfa',
+    modelName: 'Hizmetler',
+    tableName: 'Tbl_Hizmetler',
     timestamps: false
   });
-  return AnaSayfa;
+  return Hizmetler;
 };

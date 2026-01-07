@@ -18,4 +18,7 @@ app.use('/api/anasayfa', anaSayfaRoutes);
 const galeriRoutes = require('./routes/galeriRoutes');
 app.use('/api/galeri', galeriRoutes);
 
+const hizmetlerRoutes = require('./routes/hizmetlerRoutes');
+app.use('/api/hizmetler', hizmetlerRoutes);
+
 module.exports = app;
