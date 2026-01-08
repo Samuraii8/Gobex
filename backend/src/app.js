@@ -21,4 +21,7 @@ app.use('/api/galeri', galeriRoutes);
 const hizmetlerRoutes = require('./routes/hizmetlerRoutes');
 app.use('/api/hizmetler', hizmetlerRoutes);
 
+const authRoutes = require('./routes/authRoutes');
+app.use('/api/auth', authRoutes);
+
 module.exports = app;
