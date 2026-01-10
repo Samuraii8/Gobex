@@ -45,6 +45,9 @@ app.use('/api/galeri', galeriRoutes);
 const hizmetlerRoutes = require('./routes/hizmetlerRoutes');
 app.use('/api/hizmetler', hizmetlerRoutes);
 
+const sliderRoutes = require('./routes/sliderRoutes');
+app.use('/api/slider', sliderRoutes);
+
 // Simple route for health check
 app.get('/', (req, res) => {
   res.send('Gobex Backend is running securely!');
