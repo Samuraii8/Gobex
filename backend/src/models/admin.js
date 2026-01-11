@@ -9,17 +9,17 @@ module.exports = (sequelize, DataTypes) => {
     }
   }
   Admin.init({
-    İD: {
+    id: {
       type: DataTypes.INTEGER,
       primaryKey: true,
       autoIncrement: true
     },
-    Ad: {
+    ad: {
       type: DataTypes.STRING,
       allowNull: false,
       unique: true
     },
-    Şifre: {
+    sifre: {
       type: DataTypes.STRING,
       allowNull: false
     }

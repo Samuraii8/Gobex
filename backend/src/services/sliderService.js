@@ -2,7 +2,7 @@ const { Slider } = require('../models');
 
 const getAllSliderData = async () => {
   return await Slider.findAll({
-    attributes: ['İD', 'Slider_ad', 'Slider_resim']
+    attributes: ['id', 'sliderAd', 'sliderResim']
   });
 };
 

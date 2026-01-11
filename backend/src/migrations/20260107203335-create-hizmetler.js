@@ -3,25 +3,25 @@
 module.exports = {
   async up(queryInterface, Sequelize) {
     await queryInterface.createTable('Tbl_Hizmetler', {
-      İD: {
+      id: {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
         type: Sequelize.INTEGER
       },
-      Hizmet_adı: {
+      hizmetAdi: {
         type: Sequelize.STRING,
         allowNull: false
       },
-      Hizmet_açıklaması: {
+      hizmetAciklamasi: {
         type: Sequelize.TEXT,
         allowNull: true
       },
-      Hizmet_Kategorisi: {
+      hizmetKategorisi: {
         type: Sequelize.STRING,
         allowNull: true
       },
-      Hizmet_resim: {
+      hizmetResim: {
         type: Sequelize.STRING,
         allowNull: true
       }

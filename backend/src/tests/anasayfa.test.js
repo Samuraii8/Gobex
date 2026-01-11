@@ -1,6 +1,6 @@
 const request = require('supertest');
 const app = require('../app');
-const { AnaSayfa, Admin } = require('../models');
+const { AnaSayfa, Admin, sequelize } = require('../models');
 const bcrypt = require('bcryptjs');
 
 let token;
@@ -10,10 +10,10 @@ describe('AnaSayfa API', () => {
   beforeAll(async () => {
     // Admin girişi yap ve token al
     const hashedPassword = await bcrypt.hash('123456', 10);
-    await Admin.destroy({ where: { Ad: 'testadmin_anasayfa' } });
+    await Admin.destroy({ where: { ad: 'testadmin_anasayfa' } });
     await Admin.create({
-      Ad: 'testadmin_anasayfa',
-      Şifre: hashedPassword
+      ad: 'testadmin_anasayfa',
+      sifre: hashedPassword
     });
 
     const loginRes = await request(app)
@@ -23,8 +23,9 @@ describe('AnaSayfa API', () => {
   });
 
   afterAll(async () => {
-    await Admin.destroy({ where: { Ad: 'testadmin_anasayfa' } });
-    if(createdId) await AnaSayfa.destroy({ where: { İD: createdId } });
+    await Admin.destroy({ where: { ad: 'testadmin_anasayfa' } });
+    if (createdId) await AnaSayfa.destroy({ where: { id: createdId } });
+    await sequelize.close();
   });
 
   it('GET /api/anasayfa - should return all data', async () => {
@@ -37,25 +38,22 @@ describe('AnaSayfa API', () => {
     const res = await request(app)
       .post('/api/anasayfa')
       .set('Authorization', `Bearer ${token}`)
-      .send({
-        Başlık: 'Test Başlık',
-        İçerik: 'Test İçerik',
-        Resim: 'test.jpg'
-      });
+      .field('baslik', 'Test Başlık')
+      .field('icerik', 'Test İçerik');
+
     expect(res.statusCode).toEqual(201);
-    expect(res.body).toHaveProperty('İD');
-    createdId = res.body.İD;
+    expect(res.body).toHaveProperty('id');
+    createdId = res.body.id;
   });
 
   it('PUT /api/anasayfa/:id - should update data with token', async () => {
     const res = await request(app)
       .put(`/api/anasayfa/${createdId}`)
       .set('Authorization', `Bearer ${token}`)
-      .send({
-        Başlık: 'Güncellenmiş Başlık'
-      });
+      .field('baslik', 'Güncellenmiş Başlık');
+
     expect(res.statusCode).toEqual(200);
-    expect(res.body.Başlık).toEqual('Güncellenmiş Başlık');
+    expect(res.body.baslik).toEqual('Güncellenmiş Başlık');
   });
 
   it('DELETE /api/anasayfa/:id - should delete data with token', async () => {

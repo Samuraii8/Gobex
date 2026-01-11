@@ -4,24 +4,24 @@
 module.exports = {
     async up(queryInterface, Sequelize) {
         await queryInterface.createTable('Tbl_Iletisim', {
-            İD: {
+            id: {
                 type: Sequelize.INTEGER,
                 primaryKey: true,
                 autoIncrement: true
             },
-            Ad_Soyad: {
+            adSoyad: {
                 type: Sequelize.STRING,
                 allowNull: false
             },
-            E_posta: {
+            ePosta: {
                 type: Sequelize.STRING,
                 allowNull: false
             },
-            Konu: {
+            konu: {
                 type: Sequelize.STRING,
                 allowNull: false
             },
-            Mesaj: {
+            mesaj: {
                 type: Sequelize.TEXT,
                 allowNull: false
             },

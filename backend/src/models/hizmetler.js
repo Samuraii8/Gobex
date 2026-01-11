@@ -9,24 +9,24 @@ module.exports = (sequelize, DataTypes) => {
     }
   }
   Hizmetler.init({
-    İD: {
+    id: {
       type: DataTypes.INTEGER,
       primaryKey: true,
       autoIncrement: true
     },
-    Hizmet_adı: {
+    hizmetAdi: {
       type: DataTypes.STRING,
       allowNull: false
     },
-    Hizmet_açıklaması: {
+    hizmetAciklamasi: {
       type: DataTypes.TEXT,
       allowNull: true
     },
-    Hizmet_Kategorisi: {
+    hizmetKategorisi: {
       type: DataTypes.STRING,
       allowNull: true
     },
-    Hizmet_resim: {
+    hizmetResim: {
       type: DataTypes.STRING,
       allowNull: true
     }

@@ -23,7 +23,7 @@ const deleteIletisim = async (id) => {
 // Toplu silme (admin için)
 const deleteMultipleIletisim = async (ids) => {
     return await Iletisim.destroy({
-        where: { İD: ids }
+        where: { id: ids }
     });
 };
 

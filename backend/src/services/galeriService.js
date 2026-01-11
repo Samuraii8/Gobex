@@ -2,7 +2,7 @@ const { Galeri } = require('../models');
 
 const getAllGaleriData = async () => {
   return await Galeri.findAll({
-    attributes: ['İD', 'Galeri_başlık', 'Galeri_resim', 'Galeri_Detay_Resimler']
+    attributes: ['id', 'galeriBaslik', 'galeriResim', 'galeriDetayResimler']
   });
 };
 

@@ -1,22 +1,23 @@
 const request = require('supertest');
 const app = require('../app');
-const { Admin } = require('../models');
+const { Admin, sequelize } = require('../models');
 const bcrypt = require('bcryptjs');
 
 describe('Auth API', () => {
   beforeAll(async () => {
     // Test kullanıcısını oluştur (Eğer yoksa)
     const hashedPassword = await bcrypt.hash('123456', 10);
-    await Admin.destroy({ where: { Ad: 'testadmin' } }); // Temizlik
+    await Admin.destroy({ where: { ad: 'testadmin' } }); // Temizlik
     await Admin.create({
-      Ad: 'testadmin',
-      Şifre: hashedPassword
+      ad: 'testadmin',
+      sifre: hashedPassword
     });
   });
 
   afterAll(async () => {
     // Temizlik
-    await Admin.destroy({ where: { Ad: 'testadmin' } });
+    await Admin.destroy({ where: { ad: 'testadmin' } });
+    await sequelize.close();
   });
 
   it('should login successfully with correct credentials', async () => {

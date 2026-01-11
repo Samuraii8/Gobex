@@ -9,12 +9,12 @@ module.exports = (sequelize, DataTypes) => {
     }
 
     Iletisim.init({
-        İD: {
+        id: {
             type: DataTypes.INTEGER,
             primaryKey: true,
             autoIncrement: true
         },
-        Ad_Soyad: {
+        adSoyad: {
             type: DataTypes.STRING,
             allowNull: false,
             validate: {
@@ -22,7 +22,7 @@ module.exports = (sequelize, DataTypes) => {
                 len: { args: [2, 100], msg: 'Ad Soyad 2-100 karakter arasında olmalıdır.' }
             }
         },
-        E_posta: {
+        ePosta: {
             type: DataTypes.STRING,
             allowNull: false,
             validate: {
@@ -30,7 +30,7 @@ module.exports = (sequelize, DataTypes) => {
                 isEmail: { msg: 'Geçerli bir e-posta adresi giriniz.' }
             }
         },
-        Konu: {
+        konu: {
             type: DataTypes.STRING,
             allowNull: false,
             validate: {
@@ -38,7 +38,7 @@ module.exports = (sequelize, DataTypes) => {
                 len: { args: [3, 200], msg: 'Konu 3-200 karakter arasında olmalıdır.' }
             }
         },
-        Mesaj: {
+        mesaj: {
             type: DataTypes.TEXT,
             allowNull: false,
             validate: {

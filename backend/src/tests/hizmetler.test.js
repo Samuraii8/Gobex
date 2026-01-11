@@ -1,6 +1,6 @@
 const request = require('supertest');
 const app = require('../app');
-const { Hizmetler, Admin } = require('../models');
+const { Hizmetler, Admin, sequelize } = require('../models');
 const bcrypt = require('bcryptjs');
 
 let token;
@@ -9,10 +9,10 @@ let createdId;
 describe('Hizmetler API', () => {
   beforeAll(async () => {
     const hashedPassword = await bcrypt.hash('123456', 10);
-    await Admin.destroy({ where: { Ad: 'testadmin_hizmetler' } });
+    await Admin.destroy({ where: { ad: 'testadmin_hizmetler' } });
     await Admin.create({
-      Ad: 'testadmin_hizmetler',
-      Şifre: hashedPassword
+      ad: 'testadmin_hizmetler',
+      sifre: hashedPassword
     });
 
     const loginRes = await request(app)
@@ -22,22 +22,22 @@ describe('Hizmetler API', () => {
   });
 
   afterAll(async () => {
-    await Admin.destroy({ where: { Ad: 'testadmin_hizmetler' } });
-    if(createdId) await Hizmetler.destroy({ where: { İD: createdId } });
+    await Admin.destroy({ where: { ad: 'testadmin_hizmetler' } });
+    if (createdId) await Hizmetler.destroy({ where: { id: createdId } });
+    await sequelize.close();
   });
 
   it('POST /api/hizmetler - should create service', async () => {
     const res = await request(app)
       .post('/api/hizmetler')
       .set('Authorization', `Bearer ${token}`)
-      .send({
-        Hizmet_adı: 'Test Hizmet',
-        Hizmet_açıklaması: 'Açıklama',
-        Hizmet_Kategorisi: 'Kategori',
-        Hizmet_resim: 'hizmet.jpg'
-      });
+      .field('hizmetAdi', 'Test Hizmet')
+      .field('hizmetAciklamasi', 'Açıklama')
+      .field('hizmetKategorisi', 'Kategori');
+
     expect(res.statusCode).toEqual(201);
-    createdId = res.body.İD;
+    expect(res.body).toHaveProperty('id');
+    createdId = res.body.id;
   });
 
   it('GET /api/hizmetler - should return list', async () => {

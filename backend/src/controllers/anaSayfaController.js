@@ -13,23 +13,21 @@ const getAllAnaSayfaData = async (req, res) => {
 
 const createAnaSayfa = async (req, res) => {
   try {
-    const { Başlık, İçerik } = req.body;
+    const { baslik, icerik } = req.body;
 
-    // Dosya yüklendiyse path'i al
-    let Resim = null;
+    let resim = null;
     if (req.file) {
-      Resim = req.file.filename;
+      resim = req.file.filename;
     }
 
     const data = await anaSayfaService.createAnaSayfa({
-      Başlık,
-      İçerik,
-      Resim
+      baslik,
+      icerik,
+      resim
     });
 
     res.status(201).json(data);
   } catch (error) {
-    // Hata durumunda yüklenen dosyayı sil
     if (req.file) {
       const filePath = path.join(__dirname, '../../public/images', req.file.filename);
       if (fs.existsSync(filePath)) {
@@ -43,12 +41,10 @@ const createAnaSayfa = async (req, res) => {
 const updateAnaSayfa = async (req, res) => {
   try {
     const { id } = req.params;
-    const { Başlık, İçerik } = req.body;
+    const { baslik, icerik } = req.body;
 
-    // Mevcut ana sayfa verisini al (eski resmi silmek için)
     const existingData = await anaSayfaService.getAnaSayfaById(id);
     if (!existingData) {
-      // Yüklenen dosyayı sil
       if (req.file) {
         const filePath = path.join(__dirname, '../../public/images', req.file.filename);
         if (fs.existsSync(filePath)) {
@@ -60,25 +56,22 @@ const updateAnaSayfa = async (req, res) => {
 
     const updateData = {};
 
-    if (Başlık) updateData.Başlık = Başlık;
-    if (İçerik) updateData.İçerik = İçerik;
+    if (baslik) updateData.baslik = baslik;
+    if (icerik) updateData.icerik = icerik;
 
-    // Yeni dosya yüklendiyse
     if (req.file) {
-      // Eski dosyayı sil
-      if (existingData.Resim) {
-        const oldFilePath = path.join(__dirname, '../../public/images', existingData.Resim);
+      if (existingData.resim) {
+        const oldFilePath = path.join(__dirname, '../../public/images', existingData.resim);
         if (fs.existsSync(oldFilePath)) {
           fs.unlinkSync(oldFilePath);
         }
       }
-      updateData.Resim = req.file.filename;
+      updateData.resim = req.file.filename;
     }
 
     const updatedData = await anaSayfaService.updateAnaSayfa(id, updateData);
     res.status(200).json(updatedData);
   } catch (error) {
-    // Hata durumunda yüklenen dosyayı sil
     if (req.file) {
       const filePath = path.join(__dirname, '../../public/images', req.file.filename);
       if (fs.existsSync(filePath)) {
@@ -93,18 +86,15 @@ const deleteAnaSayfa = async (req, res) => {
   try {
     const { id } = req.params;
 
-    // Ana sayfa verisini al (resmi silmek için)
     const anaSayfa = await anaSayfaService.getAnaSayfaById(id);
     if (!anaSayfa) {
       return res.status(404).json({ message: 'Kayıt bulunamadı.' });
     }
 
-    // Ana sayfa verisini sil
     await anaSayfaService.deleteAnaSayfa(id);
 
-    // Resim dosyasını sil
-    if (anaSayfa.Resim) {
-      const filePath = path.join(__dirname, '../../public/images', anaSayfa.Resim);
+    if (anaSayfa.resim) {
+      const filePath = path.join(__dirname, '../../public/images', anaSayfa.resim);
       if (fs.existsSync(filePath)) {
         fs.unlinkSync(filePath);
       }

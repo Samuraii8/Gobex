@@ -5,14 +5,13 @@ const fs = require('fs');
 const getAllGaleri = async (req, res) => {
   try {
     const data = await galeriService.getAllGaleriData();
-    // JSON string olan alanları parse edip dönmek frontend için kolaylık sağlar
     const parsedData = data.map(item => {
       const plainItem = item.get({ plain: true });
-      if (plainItem.Galeri_Detay_Resimler) {
+      if (plainItem.galeriDetayResimler) {
         try {
-          plainItem.Galeri_Detay_Resimler = JSON.parse(plainItem.Galeri_Detay_Resimler);
+          plainItem.galeriDetayResimler = JSON.parse(plainItem.galeriDetayResimler);
         } catch (e) {
-          plainItem.Galeri_Detay_Resimler = [];
+          plainItem.galeriDetayResimler = [];
         }
       }
       return plainItem;
@@ -29,11 +28,11 @@ const getGaleriById = async (req, res) => {
     const data = await galeriService.getGaleriDataById(id);
     if (data) {
       const plainItem = data.get({ plain: true });
-      if (plainItem.Galeri_Detay_Resimler) {
+      if (plainItem.galeriDetayResimler) {
         try {
-          plainItem.Galeri_Detay_Resimler = JSON.parse(plainItem.Galeri_Detay_Resimler);
+          plainItem.galeriDetayResimler = JSON.parse(plainItem.galeriDetayResimler);
         } catch (e) {
-          plainItem.Galeri_Detay_Resimler = [];
+          plainItem.galeriDetayResimler = [];
         }
       }
       res.status(200).json(plainItem);
@@ -47,33 +46,29 @@ const getGaleriById = async (req, res) => {
 
 const createGaleri = async (req, res) => {
   try {
-    const { Galeri_başlık, Galeri_açıklaması } = req.body;
+    const { galeriBaslik, galeriAciklamasi } = req.body;
 
-    let Galeri_resim = null;
+    let galeriResim = null;
     let detailImages = [];
 
-    // Dosyaları işle
     if (req.files) {
-      // Ana resim
       if (req.files['resim'] && req.files['resim'][0]) {
-        Galeri_resim = req.files['resim'][0].filename;
+        galeriResim = req.files['resim'][0].filename;
       }
-      // Detay resimler
       if (req.files['detay_resimler']) {
         detailImages = req.files['detay_resimler'].map(f => f.filename);
       }
     }
 
     const data = await galeriService.createGaleri({
-      Galeri_başlık,
-      Galeri_resim,
-      Galeri_açıklaması,
-      Galeri_Detay_Resimler: JSON.stringify(detailImages)
+      galeriBaslik,
+      galeriResim,
+      galeriAciklamasi,
+      galeriDetayResimler: JSON.stringify(detailImages)
     });
 
     res.status(201).json(data);
   } catch (error) {
-    // Hata durumunda yüklenen tüm dosyaları sil
     if (req.files) {
       const allFiles = [
         ...(req.files['resim'] || []),
@@ -91,11 +86,10 @@ const createGaleri = async (req, res) => {
 const updateGaleri = async (req, res) => {
   try {
     const { id } = req.params;
-    const { Galeri_başlık, Galeri_açıklaması } = req.body;
+    const { galeriBaslik, galeriAciklamasi } = req.body;
 
     const existingGaleri = await galeriService.getGaleriDataById(id);
     if (!existingGaleri) {
-      // Hata: Kayıt yok, yüklenen dosyaları sil
       if (req.files) {
         const allFiles = [
           ...(req.files['resim'] || []),
@@ -111,30 +105,27 @@ const updateGaleri = async (req, res) => {
 
     const updateData = {};
 
-    if (Galeri_başlık) updateData.Galeri_başlık = Galeri_başlık;
-    if (Galeri_açıklaması) updateData.Galeri_açıklaması = Galeri_açıklaması;
+    if (galeriBaslik) updateData.galeriBaslik = galeriBaslik;
+    if (galeriAciklamasi) updateData.galeriAciklamasi = galeriAciklamasi;
 
-    // Ana resim güncellemesi
     if (req.files && req.files['resim'] && req.files['resim'][0]) {
-      // Eski ana resmi sil
-      if (existingGaleri.Galeri_resim) {
-        const oldFilePath = path.join(__dirname, '../../public/images', existingGaleri.Galeri_resim);
+      if (existingGaleri.galeriResim) {
+        const oldFilePath = path.join(__dirname, '../../public/images', existingGaleri.galeriResim);
         if (fs.existsSync(oldFilePath)) fs.unlinkSync(oldFilePath);
       }
-      updateData.Galeri_resim = req.files['resim'][0].filename;
+      updateData.galeriResim = req.files['resim'][0].filename;
     }
 
-    // Detay resim güncellemesi (EKLEME MANTIĞI)
     if (req.files && req.files['detay_resimler']) {
       let currentDetails = [];
       try {
-        currentDetails = JSON.parse(existingGaleri.Galeri_Detay_Resimler || '[]');
+        currentDetails = JSON.parse(existingGaleri.galeriDetayResimler || '[]');
       } catch (e) { currentDetails = []; }
 
       const newDetails = req.files['detay_resimler'].map(f => f.filename);
       const combinedDetails = [...currentDetails, ...newDetails];
 
-      updateData.Galeri_Detay_Resimler = JSON.stringify(combinedDetails);
+      updateData.galeriDetayResimler = JSON.stringify(combinedDetails);
     }
 
     const updatedData = await galeriService.updateGaleri(id, updateData);
@@ -162,19 +153,16 @@ const deleteGaleri = async (req, res) => {
       return res.status(404).json({ message: 'Kayıt bulunamadı.' });
     }
 
-    // Kaydı sil
     await galeriService.deleteGaleri(id);
 
-    // Ana resmi sil
-    if (galeri.Galeri_resim) {
-      const filePath = path.join(__dirname, '../../public/images', galeri.Galeri_resim);
+    if (galeri.galeriResim) {
+      const filePath = path.join(__dirname, '../../public/images', galeri.galeriResim);
       if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
     }
 
-    // Detay resimleri sil
-    if (galeri.Galeri_Detay_Resimler) {
+    if (galeri.galeriDetayResimler) {
       try {
-        const details = JSON.parse(galeri.Galeri_Detay_Resimler);
+        const details = JSON.parse(galeri.galeriDetayResimler);
         details.forEach(filename => {
           const filePath = path.join(__dirname, '../../public/images', filename);
           if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
@@ -190,34 +178,29 @@ const deleteGaleri = async (req, res) => {
   }
 };
 
-// Sadece tek bir detay resmini silmek için özel endpoint
 const deleteGaleriDetailImage = async (req, res) => {
   try {
-    const { id } = req.params; // Galeri ID
-    const { filename } = req.body; // Silinecek dosya adı
+    const { id } = req.params;
+    const { filename } = req.body;
 
     const galeri = await galeriService.getGaleriDataById(id);
     if (!galeri) return res.status(404).json({ message: 'Kayıt bulunamadı.' });
 
     let details = [];
     try {
-      details = JSON.parse(galeri.Galeri_Detay_Resimler || '[]');
+      details = JSON.parse(galeri.galeriDetayResimler || '[]');
     } catch (e) { details = []; }
 
-    // Dosya listede var mı?
     if (!details.includes(filename)) {
       return res.status(404).json({ message: 'Resim bulunamadı.' });
     }
 
-    // Listeden çıkar
     const newDetails = details.filter(f => f !== filename);
 
-    // DB güncelle
     await galeriService.updateGaleri(id, {
-      Galeri_Detay_Resimler: JSON.stringify(newDetails)
+      galeriDetayResimler: JSON.stringify(newDetails)
     });
 
-    // Dosyayı diskten sil
     const filePath = path.join(__dirname, '../../public/images', filename);
     if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
 

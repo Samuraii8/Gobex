@@ -28,32 +28,32 @@ const getIletisimById = async (req, res) => {
 // POST - Yeni iletişim mesajı oluştur (Public - Rate Limited)
 const createIletisim = async (req, res) => {
     try {
-        const { Ad_Soyad, E_posta, Konu, Mesaj } = req.body;
+        const { adSoyad, ePosta, konu, mesaj } = req.body;
 
         // Temel validasyon
-        if (!Ad_Soyad || !E_posta || !Konu || !Mesaj) {
+        if (!adSoyad || !ePosta || !konu || !mesaj) {
             return res.status(400).json({
                 message: 'Tüm alanlar zorunludur.',
-                required: ['Ad_Soyad', 'E_posta', 'Konu', 'Mesaj']
+                required: ['adSoyad', 'ePosta', 'konu', 'mesaj']
             });
         }
 
         // E-posta format kontrolü
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRegex.test(E_posta)) {
+        if (!emailRegex.test(ePosta)) {
             return res.status(400).json({ message: 'Geçerli bir e-posta adresi giriniz.' });
         }
 
         const data = await iletisimService.createIletisim({
-            Ad_Soyad: Ad_Soyad.trim(),
-            E_posta: E_posta.trim().toLowerCase(),
-            Konu: Konu.trim(),
-            Mesaj: Mesaj.trim()
+            adSoyad: adSoyad.trim(),
+            ePosta: ePosta.trim().toLowerCase(),
+            konu: konu.trim(),
+            mesaj: mesaj.trim()
         });
 
         res.status(201).json({
             message: 'Mesajınız başarıyla gönderildi.',
-            id: data.İD
+            id: data.id
         });
     } catch (error) {
         // Sequelize validation hataları

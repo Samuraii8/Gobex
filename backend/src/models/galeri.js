@@ -14,24 +14,24 @@ module.exports = (sequelize, DataTypes) => {
     }
   }
   Galeri.init({
-    İD: {
+    id: {
       type: DataTypes.INTEGER,
       primaryKey: true,
       autoIncrement: true
     },
-    Galeri_başlık: {
+    galeriBaslik: {
       type: DataTypes.STRING,
       allowNull: false
     },
-    Galeri_resim: {
+    galeriResim: {
       type: DataTypes.STRING,
       allowNull: true
     },
-    Galeri_Detay_Resimler: {
+    galeriDetayResimler: {
       type: DataTypes.TEXT,
       allowNull: true
     },
-    Galeri_açıklaması: {
+    galeriAciklamasi: {
       type: DataTypes.TEXT,
       allowNull: true
     }

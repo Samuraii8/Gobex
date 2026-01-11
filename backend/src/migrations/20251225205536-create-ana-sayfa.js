@@ -3,21 +3,21 @@
 module.exports = {
   async up(queryInterface, Sequelize) {
     await queryInterface.createTable('Tbl_AnaSayfa', {
-      İD: {
+      id: {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
         type: Sequelize.INTEGER
       },
-      Başlık: {
+      baslik: {
         type: Sequelize.STRING,
         allowNull: false
       },
-      İçerik: {
+      icerik: {
         type: Sequelize.TEXT,
         allowNull: false
       },
-      Resim: {
+      resim: {
         type: Sequelize.STRING,
         allowNull: true
       }

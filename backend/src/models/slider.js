@@ -7,16 +7,16 @@ module.exports = (sequelize, DataTypes) => {
     }
   }
   Slider.init({
-    İD: {
+    id: {
       type: DataTypes.INTEGER,
       primaryKey: true,
       autoIncrement: true
     },
-    Slider_ad: {
+    sliderAd: {
       type: DataTypes.STRING,
       allowNull: false
     },
-    Slider_resim: {
+    sliderResim: {
       type: DataTypes.STRING,
       allowNull: true
     }

@@ -3,17 +3,17 @@
 module.exports = {
   up: async (queryInterface, Sequelize) => {
     await queryInterface.createTable('Tbl_Slider', {
-      İD: {
+      id: {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
         type: Sequelize.INTEGER
       },
-      Slider_ad: {
+      sliderAd: {
         type: Sequelize.STRING,
         allowNull: false
       },
-      Slider_resim: {
+      sliderResim: {
         type: Sequelize.STRING,
         allowNull: true
       }

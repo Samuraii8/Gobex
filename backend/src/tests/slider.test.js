@@ -1,6 +1,6 @@
 const request = require('supertest');
 const app = require('../app');
-const { Slider, Admin } = require('../models');
+const { Slider, Admin, sequelize } = require('../models');
 const bcrypt = require('bcryptjs');
 
 let token;
@@ -10,10 +10,10 @@ describe('Slider API', () => {
     beforeAll(async () => {
         // Create a test admin for authentication
         const hashedPassword = await bcrypt.hash('123456', 10);
-        await Admin.destroy({ where: { Ad: 'testadmin_slider' } });
+        await Admin.destroy({ where: { ad: 'testadmin_slider' } });
         await Admin.create({
-            Ad: 'testadmin_slider',
-            Şifre: hashedPassword
+            ad: 'testadmin_slider',
+            sifre: hashedPassword
         });
 
         // Login to get token
@@ -25,50 +25,47 @@ describe('Slider API', () => {
 
     afterAll(async () => {
         // Clean up
-        await Admin.destroy({ where: { Ad: 'testadmin_slider' } });
-        if (createdId) await Slider.destroy({ where: { İD: createdId } });
+        await Admin.destroy({ where: { ad: 'testadmin_slider' } });
+        if (createdId) await Slider.destroy({ where: { id: createdId } });
+        await sequelize.close();
     });
 
     it('POST /api/slider - should create slider item', async () => {
         const res = await request(app)
             .post('/api/slider')
             .set('Authorization', `Bearer ${token}`)
-            .send({
-                Slider_ad: 'Test Slider',
-                Slider_resim: 'slider.jpg'
-            });
+            .field('sliderAd', 'Test Slider');
+        // Resim yükleme testi için .attach('resim', 'path/to/file') gerekebilir ama şimdilik sadece text
+
         expect(res.statusCode).toEqual(201);
-        expect(res.body).toHaveProperty('İD');
-        expect(res.body.Slider_ad).toEqual('Test Slider');
-        createdId = res.body.İD;
+        expect(res.body).toHaveProperty('id');
+        expect(res.body.sliderAd).toEqual('Test Slider');
+        createdId = res.body.id;
     });
 
     it('GET /api/slider - should return list', async () => {
         const res = await request(app).get('/api/slider');
         expect(res.statusCode).toEqual(200);
         expect(Array.isArray(res.body)).toBeTruthy();
-        // Check if the created item is in the list
-        const found = res.body.find(item => item.İD === createdId);
+        const found = res.body.find(item => item.id === createdId);
         expect(found).toBeTruthy();
     });
 
     it('GET /api/slider/:id - should return single item', async () => {
         const res = await request(app).get(`/api/slider/${createdId}`);
         expect(res.statusCode).toEqual(200);
-        expect(res.body.İD).toEqual(createdId);
-        expect(res.body.Slider_ad).toEqual('Test Slider');
+        expect(res.body.id).toEqual(createdId);
+        expect(res.body.sliderAd).toEqual('Test Slider');
     });
 
     it('PUT /api/slider/:id - should update slider item', async () => {
         const res = await request(app)
             .put(`/api/slider/${createdId}`)
             .set('Authorization', `Bearer ${token}`)
-            .send({
-                Slider_ad: 'Updated Slider',
-                Slider_resim: 'updated_slider.jpg'
-            });
+            .field('sliderAd', 'Updated Slider');
+
         expect(res.statusCode).toEqual(200);
-        expect(res.body.Slider_ad).toEqual('Updated Slider');
+        expect(res.body.sliderAd).toEqual('Updated Slider');
     });
 
     it('DELETE /api/slider/:id - should delete slider item', async () => {

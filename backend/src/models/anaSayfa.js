@@ -14,20 +14,20 @@ module.exports = (sequelize, DataTypes) => {
     }
   }
   AnaSayfa.init({
-    İD: {
+    id: {
       type: DataTypes.INTEGER,
       primaryKey: true,
       autoIncrement: true //true kalmalı burası!!!
     },
-    Başlık: {
+    baslik: {
       type: DataTypes.STRING,
       allowNull: false
     },
-    İçerik: {
+    icerik: {
       type: DataTypes.TEXT,
       allowNull: false
     },
-    Resim: {
+    resim: {
       type: DataTypes.STRING,
       allowNull: true
     }

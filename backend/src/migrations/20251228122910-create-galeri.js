@@ -3,21 +3,21 @@
 module.exports = {
   async up(queryInterface, Sequelize) {
     await queryInterface.createTable('Tbl_Galeri', {
-      İD: {
+      id: {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
         type: Sequelize.INTEGER
       },
-      Galeri_başlık: {
+      galeriBaslik: {
         type: Sequelize.STRING,
         allowNull: false
       },
-      Galeri_resim: {
+      galeriResim: {
         type: Sequelize.STRING,
         allowNull: true
       },
-      Galeri_açıklaması: {
+      galeriAciklamasi: {
         type: Sequelize.TEXT,
         allowNull: true
       }

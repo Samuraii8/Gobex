@@ -3,18 +3,18 @@
 module.exports = {
   async up(queryInterface, Sequelize) {
     await queryInterface.createTable('Tbl_Admin', {
-      İD: {
+      id: {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
         type: Sequelize.INTEGER
       },
-      Ad: {
+      ad: {
         type: Sequelize.STRING,
         allowNull: false,
         unique: true
       },
-      Şifre: {
+      sifre: {
         type: Sequelize.STRING,
         allowNull: false
       }

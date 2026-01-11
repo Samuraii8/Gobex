@@ -27,23 +27,16 @@ const getSliderById = async (req, res) => {
 
 const createSlider = async (req, res) => {
   try {
-    const { Slider_ad } = req.body;
+    const { sliderAd } = req.body;
 
-    // 1. Durum: Dosya direkt yüklendiyse (Multipart)
-    let Slider_resim = null;
+    let sliderResim = null;
     if (req.file) {
-      // Sadece dosya adını kaydet (public/images içinde olduğu için)
-      Slider_resim = req.file.filename;
-    }
-    // 2. Durum: Dosya daha önce yüklendiyse ve path gönderildiyse (JSON Body)
-    else if (req.body.Slider_resim) {
-      // Gelen path '/images/dosya.jpg' formatındaysa sadece dosya adını al
-      Slider_resim = path.basename(req.body.Slider_resim);
+      sliderResim = req.file.filename;
     }
 
     const data = await sliderService.createSlider({
-      Slider_ad,
-      Slider_resim
+      sliderAd,
+      sliderResim
     });
 
     res.status(201).json(data);
@@ -62,9 +55,9 @@ const createSlider = async (req, res) => {
 const updateSlider = async (req, res) => {
   try {
     const { id } = req.params;
-    const { Slider_ad } = req.body;
+    const { sliderAd } = req.body;
 
-    // Mevcut slider'ı al (eski resmi silmek için)
+    // Mevcut slider'ı al
     const existingSlider = await sliderService.getSliderDataById(id);
     if (!existingSlider) {
       // Yüklenen dosyayı sil (varsa)
@@ -79,35 +72,20 @@ const updateSlider = async (req, res) => {
 
     const updateData = {};
 
-    // Slider_ad varsa güncelle
-    if (Slider_ad) {
-      updateData.Slider_ad = Slider_ad;
+    if (sliderAd) {
+      updateData.sliderAd = sliderAd;
     }
 
-    // 1. Durum: Yeni dosya direkt yüklendiyse
+    // Yeni dosya yüklendiyse
     if (req.file) {
       // Eski dosyayı sil
-      if (existingSlider.Slider_resim) {
-        const oldFilePath = path.join(__dirname, '../../public/images', existingSlider.Slider_resim);
+      if (existingSlider.sliderResim) {
+        const oldFilePath = path.join(__dirname, '../../public/images', existingSlider.sliderResim);
         if (fs.existsSync(oldFilePath)) {
           fs.unlinkSync(oldFilePath);
         }
       }
-      updateData.Slider_resim = req.file.filename;
-    }
-    // 2. Durum: Yeni dosya path'i string olarak geldiyse
-    else if (req.body.Slider_resim) {
-      const newFileName = path.basename(req.body.Slider_resim);
-      // Eğer dosya adı değiştiyse eskiyi sil ve yeniyi kaydet
-      if (existingSlider.Slider_resim !== newFileName) {
-        if (existingSlider.Slider_resim) {
-          const oldFilePath = path.join(__dirname, '../../public/images', existingSlider.Slider_resim);
-          if (fs.existsSync(oldFilePath)) {
-            fs.unlinkSync(oldFilePath);
-          }
-        }
-        updateData.Slider_resim = newFileName;
-      }
+      updateData.sliderResim = req.file.filename;
     }
 
     const updatedData = await sliderService.updateSlider(id, updateData);
@@ -128,18 +106,18 @@ const deleteSlider = async (req, res) => {
   try {
     const { id } = req.params;
 
-    // Slider'ı al (resmi silmek için)
+    // Slider'ı al
     const slider = await sliderService.getSliderDataById(id);
     if (!slider) {
       return res.status(404).json({ message: 'Kayıt bulunamadı.' });
     }
 
     // Slider'ı sil
-    const deleted = await sliderService.deleteSlider(id);
+    await sliderService.deleteSlider(id);
 
     // Resim dosyasını sil
-    if (slider.Slider_resim) {
-      const filePath = path.join(__dirname, '../../public/images', slider.Slider_resim);
+    if (slider.sliderResim) {
+      const filePath = path.join(__dirname, '../../public/images', slider.sliderResim);
       if (fs.existsSync(filePath)) {
         fs.unlinkSync(filePath);
       }
@@ -158,4 +136,3 @@ module.exports = {
   updateSlider,
   deleteSlider,
 };
-

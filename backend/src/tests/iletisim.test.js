@@ -10,9 +10,9 @@ describe('İletişim API Tests', () => {
 
     beforeAll(async () => {
         // Test admin oluştur
-        await Admin.destroy({ where: { Ad: 'testadmin_iletisim' } });
+        await Admin.destroy({ where: { ad: 'testadmin_iletisim' } });
         const hashedPassword = await bcrypt.hash('testpassword123', 10);
-        await Admin.create({ Ad: 'testadmin_iletisim', Şifre: hashedPassword });
+        await Admin.create({ ad: 'testadmin_iletisim', sifre: hashedPassword });
 
         // Login ve token al
         const loginRes = await request(app)
@@ -23,9 +23,9 @@ describe('İletişim API Tests', () => {
 
     afterAll(async () => {
         // Temizlik
-        await Admin.destroy({ where: { Ad: 'testadmin_iletisim' } });
+        await Admin.destroy({ where: { ad: 'testadmin_iletisim' } });
         if (testMessageId) {
-            await Iletisim.destroy({ where: { İD: testMessageId } });
+            await Iletisim.destroy({ where: { id: testMessageId } });
         }
         await sequelize.close();
     });
@@ -35,10 +35,10 @@ describe('İletişim API Tests', () => {
         const res = await request(app)
             .post('/api/iletisim')
             .send({
-                Ad_Soyad: 'Test Kullanıcı',
-                E_posta: 'test@example.com',
-                Konu: 'Test Konusu',
-                Mesaj: 'Bu bir test mesajıdır. En az 10 karakter olmalı.'
+                adSoyad: 'Test Kullanıcı',
+                ePosta: 'test@example.com',
+                konu: 'Test Konusu',
+                mesaj: 'Bu bir test mesajıdır. En az 10 karakter olmalı.'
             });
 
         expect(res.statusCode).toEqual(201);
@@ -52,8 +52,8 @@ describe('İletişim API Tests', () => {
         const res = await request(app)
             .post('/api/iletisim')
             .send({
-                Ad_Soyad: 'Test Kullanıcı'
-                // E_posta, Konu, Mesaj eksik
+                adSoyad: 'Test Kullanıcı'
+                // ePosta, konu, mesaj eksik
             });
 
         expect(res.statusCode).toEqual(400);
@@ -65,10 +65,10 @@ describe('İletişim API Tests', () => {
         const res = await request(app)
             .post('/api/iletisim')
             .send({
-                Ad_Soyad: 'Test Kullanıcı',
-                E_posta: 'gecersiz-email',
-                Konu: 'Test Konusu',
-                Mesaj: 'Bu bir test mesajıdır.'
+                adSoyad: 'Test Kullanıcı',
+                ePosta: 'gecersiz-email',
+                konu: 'Test Konusu',
+                mesaj: 'Bu bir test mesajıdır.'
             });
 
         expect(res.statusCode).toEqual(400);
@@ -101,7 +101,7 @@ describe('İletişim API Tests', () => {
             .set('Authorization', `Bearer ${token}`);
 
         expect(res.statusCode).toEqual(200);
-        expect(res.body).toHaveProperty('Ad_Soyad', 'Test Kullanıcı');
+        expect(res.body).toHaveProperty('adSoyad', 'Test Kullanıcı');
     });
 
     // DELETE - Mesaj sil (Admin)

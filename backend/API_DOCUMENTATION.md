@@ -1,838 +1,162 @@
-# Gobex Backend API Dokümantasyonu
+# Gobex Backend Teknik Dokümantasyon
 
-Bu belge, Gobex Backend projesinde bulunan tüm API endpoint'lerini detaylı olarak açıklamaktadır.
+Bu belge, Gobex Backend projesinin teknik mimarisini, veritabanı yapısını ve API endpoint'lerini detaylı olarak açıklar.
 
-**Base URL:** `http://localhost:3000`
-
----
-
-## 📋 İçindekiler
-
-1. [Kimlik Doğrulama (Auth)](#1-kimlik-doğrulama-auth)
-2. [Ana Sayfa](#2-ana-sayfa)
-3. [Galeri](#3-galeri)
-4. [Hizmetler](#4-hizmetler)
-5. [Slider](#5-slider)
-6. [İletişim](#6-i̇letişim)
-7. [Hata Kodları](#7-hata-kodları)
+**Son Güncelleme:** 12 Ocak 2026
+**Base URL:** `http://localhost:3001`
 
 ---
 
-## 🔐 Kimlik Doğrulama
-
-Korumalı endpoint'lere (`POST`, `PUT`, `DELETE`) erişim için JWT token gereklidir.
-
-**Header Formatı:**
-```
-Authorization: Bearer <token>
-```
-
----
-
-## 1. Kimlik Doğrulama (Auth)
-
-### `POST /api/auth/login`
-
-Admin kullanıcı girişi yapar ve JWT token döner.
-
-**Rate Limit:** 15 dakikada en fazla 10 istek.
-
-**Request Body:**
-```json
-{
-  "ad": "string (zorunlu)",
-  "sifre": "string (zorunlu)"
-}
-```
-
-**Response (200 OK):**
-```json
-{
-  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-}
-```
-
-**Response (401 Unauthorized):**
-```json
-{
-  "message": "Giriş başarısız. Kullanıcı adı veya şifre hatalı."
-}
-```
+## 📚 İçindekiler
+1.  [Veritabanı Şeması (Models)](#1-veritabanı-şeması-models)
+2.  [API Endpoint'leri](#2-api-endpointleri)
+    *   [Kimlik Doğrulama (Auth)](#21-kimlik-doğrulama-auth)
+    *   [Slider Yönetimi](#22-slider-yönetimi)
+    *   [Hizmetler Yönetimi](#23-hizmetler-yönetimi)
+    *   [Galeri Yönetimi](#24-galeri-yönetimi)
+    *   [Ana Sayfa İçerik](#25-ana-sayfa-içerik)
+    *   [İletişim & Mesajlar](#26-iletişim--mesajlar)
+3.  [Güvenlik & Standartlar](#3-güvenlik--standartlar)
 
 ---
 
-## 2. Ana Sayfa
+## 1. Veritabanı Şeması (Models)
 
-### `GET /api/anasayfa`
+Proje **PostgreSQL** veritabanını kullanmakta olup, **Sequelize ORM** ile yönetilmektedir.
 
-Tüm ana sayfa içeriklerini listeler.
+### 1.1. Admin Tablosu (`Tbl_Admin`)
+Yönetici girişleri için kullanılır.
 
-**Auth:** ❌ Gerekmez
+| Kolon Adı | Veri Tipi | Özellikler | Açıklama |
+| :--- | :--- | :--- | :--- |
+| `id` | INTEGER | PK, AutoIncrement | Benzersiz kayıt ID'si |
+| `ad` | STRING | Not Null, Unique | Kullanıcı adı |
+| `sifre` | STRING | Not Null | Hashlenmiş şifre (Bcrypt) |
 
-**Response (200 OK):**
-```json
-[
-  {
-    "İD": 1,
-    "Başlık": "Hoş Geldiniz",
-    "İçerik": "Ana sayfa içeriği...",
-    "Resim": "anasayfa.jpg"
-  }
-]
-```
+### 1.2. Slider Tablosu (`Tbl_Slider`)
+Ana sayfadaki slider görsellerini tutar.
 
----
+| Kolon Adı | Veri Tipi | Özellikler | Açıklama |
+| :--- | :--- | :--- | :--- |
+| `id` | INTEGER | PK, AutoIncrement | Benzersiz kayıt ID'si |
+| `sliderAd` | STRING | Not Null | Slider başlığı/adı |
+| `sliderResim` | STRING | Nullable | Resim dosya adı (örn: `img-123.jpg`) |
 
-### `POST /api/anasayfa`
+### 1.3. Hizmetler Tablosu (`Tbl_Hizmetler`)
+Sunulan hizmetlerin listesidir.
 
-Yeni bir ana sayfa içeriği oluşturur ve resim dosyası yükler.
+| Kolon Adı | Veri Tipi | Özellikler | Açıklama |
+| :--- | :--- | :--- | :--- |
+| `id` | INTEGER | PK, AutoIncrement | Benzersiz kayıt ID'si |
+| `hizmetAdi` | STRING | Not Null | Hizmetin adı |
+| `hizmetAciklamasi` | TEXT | Nullable | Hizmet detayı |
+| `hizmetKategorisi` | STRING | Nullable | Hizmet kategorisi |
+| `hizmetResim` | STRING | Nullable | Resim dosya adı |
 
-**Auth:** ✅ JWT Token Gerekli
+### 1.4. Galeri Tablosu (`Tbl_Galeri`)
+Galeri öğelerini ve çoklu resimleri tutar.
 
-**Content-Type:** `multipart/form-data`
+| Kolon Adı | Veri Tipi | Özellikler | Açıklama |
+| :--- | :--- | :--- | :--- |
+| `id` | INTEGER | PK, AutoIncrement | Benzersiz kayıt ID'si |
+| `galeriBaslik` | STRING | Not Null | Galeri başlığı |
+| `galeriAciklamasi` | TEXT | Nullable | Galeri açıklaması |
+| `galeriResim` | STRING | Nullable | **Ana Görsel** dosya adı |
+| `galeriDetayResimler` | TEXT | Nullable | **Detay Görselleri** (JSON Array String: `["a.jpg","b.jpg"]`) |
 
-**Form Data:**
-| Alan      | Tip     | Açıklama                                    |
-|-----------|---------|---------------------------------------------|
-| `Başlık`  | string  | Ana sayfa başlığı (zorunlu)                 |
-| `İçerik`  | string  | Ana sayfa içeriği (zorunlu)                 |
-| `resim`   | file    | Resim dosyası (png, jpg, gif, webp, svg - max 5MB) |
+### 1.5. Ana Sayfa Tablosu (`Tbl_AnaSayfa`)
+Ana sayfa statik içeriklerini yönetir.
 
-**Örnek cURL İsteği:**
-```bash
-curl -X POST http://localhost:3000/api/anasayfa \
-  -H "Authorization: Bearer <token>" \
-  -F "Başlık=Hoş Geldiniz" \
-  -F "İçerik=Ana sayfa içeriği..." \
-  -F "resim=@/path/to/image.jpg"
-```
+| Kolon Adı | Veri Tipi | Özellikler | Açıklama |
+| :--- | :--- | :--- | :--- |
+| `id` | INTEGER | PK, AutoIncrement | Benzersiz kayıt ID'si |
+| `baslik` | STRING | Not Null | İçerik başlığı |
+| `icerik` | TEXT | Not Null | İçerik metni |
+| `resim` | STRING | Nullable | İçerik resmi |
 
-**Response (201 Created):**
-```json
-{
-  "İD": 2,
-  "Başlık": "Yeni Başlık",
-  "İçerik": "Yeni içerik...",
-  "Resim": "1736610000000-123456789.jpg"
-}
-```
+### 1.6. İletişim Tablosu (`Tbl_Iletisim`)
+Kullanıcılardan gelen iletişim formlarını saklar.
 
----
-
-### `PUT /api/anasayfa/:id`
-
-Belirtilen ID'ye sahip ana sayfa içeriğini günceller. Yeni resim yüklenirse eski resim otomatik silinir.
-
-**Auth:** ✅ JWT Token Gerekli
-
-**Content-Type:** `multipart/form-data`
-
-**URL Parametreleri:**
-| Parametre | Tip     | Açıklama              |
-|-----------|---------|----------------------|
-| `id`      | Integer | Güncellenecek kayıt ID'si |
-
-**Form Data:**
-| Alan      | Tip     | Açıklama                                    |
-|-----------|---------|---------------------------------------------|
-| `Başlık`  | string  | Ana sayfa başlığı (opsiyonel)               |
-| `İçerik`  | string  | Ana sayfa içeriği (opsiyonel)               |
-| `resim`   | file    | Yeni resim dosyası (opsiyonel - max 5MB)    |
-
-**Response (200 OK):**
-```json
-{
-  "İD": 1,
-  "Başlık": "Güncellenmiş Başlık",
-  "İçerik": "Güncellenmiş içerik...",
-  "Resim": "1736610500000-987654321.jpg"
-}
-```
+| Kolon Adı | Veri Tipi | Özellikler | Açıklama |
+| :--- | :--- | :--- | :--- |
+| `id` | INTEGER | PK, AutoIncrement | Benzersiz kayıt ID'si |
+| `adSoyad` | STRING | Not Null | Gönderen adı soyadı |
+| `ePosta` | STRING | Not Null | Gönderen e-posta adresi |
+| `konu` | STRING | Not Null | Mesaj konusu |
+| `mesaj` | TEXT | Not Null | Mesaj içeriği |
+| `createdAt` | DATETIME | Default: NOW | Gönderim zamanı |
 
 ---
 
-### `DELETE /api/anasayfa/:id`
+## 2. API Endpoint'leri
 
-Belirtilen ID'ye sahip ana sayfa içeriğini ve ilişkili resim dosyasını siler.
+### 2.1. Kimlik Doğrulama (Auth)
 
-**Auth:** ✅ JWT Token Gerekli
+| Method | Endpoint | Auth | Açıklama | Body / Params |
+| :--- | :--- | :--- | :--- | :--- |
+| `POST` | `/api/auth/login` | ❌ JWT Yok | Admin girişi ve Token alma | `{ ad, sifre }` |
 
-**URL Parametreleri:**
-| Parametre | Tip     | Açıklama           |
-|-----------|---------|-------------------|
-| `id`      | Integer | Silinecek kayıt ID'si |
+### 2.2. Slider Yönetimi
 
-**Response (204 No Content):** Başarılı, gövde yok.
+| Method | Endpoint | Auth | Açıklama | Body (Multipart/Form-Data) |
+| :--- | :--- | :--- | :--- | :--- |
+| `GET` | `/api/slider` | ❌ JWT Yok | Tüm sliderları listele | - |
+| `GET` | `/api/slider/:id` | ❌ JWT Yok | Tekil slider getir | - |
+| `POST` | `/api/slider` | ✅ JWT | Yeni slider oluştur | `sliderAd`, `resim` (File) |
+| `PUT` | `/api/slider/:id` | ✅ JWT | Slider güncelle | `sliderAd`, `resim` (File) |
+| `DELETE` | `/api/slider/:id` | ✅ JWT | Slider sil | - |
 
+### 2.3. Hizmetler Yönetimi
 
----
+| Method | Endpoint | Auth | Açıklama | Body (Multipart/Form-Data) |
+| :--- | :--- | :--- | :--- | :--- |
+| `GET` | `/api/hizmetler` | ❌ JWT Yok | Hizmetleri listele | - |
+| `POST` | `/api/hizmetler` | ✅ JWT | Hizmet ekle | `hizmetAdi`, `hizmetAciklamasi`, `hizmetKategorisi`, `resim` (File) |
+| `PUT` | `/api/hizmetler/:id` | ✅ JWT | Hizmet güncelle | `hizmetAdi`, `hizmetAciklamasi`, `hizmetKategorisi`, `resim` (File) |
+| `DELETE` | `/api/hizmetler/:id` | ✅ JWT | Hizmet sil | - |
 
-## 3. Galeri
+### 2.4. Galeri Yönetimi
 
-### `GET /api/galeri`
+| Method | Endpoint | Auth | Açıklama | Body (Multipart/Form-Data) |
+| :--- | :--- | :--- | :--- | :--- |
+| `GET` | `/api/galeri` | ❌ JWT Yok | Galeriyi listele (Detaylar dahil) | - |
+| `GET` | `/api/galeri/:id` | ❌ JWT Yok | Tekil galeri getir | - |
+| `POST` | `/api/galeri` | ✅ JWT | Galeri ekle (Çoklu Resim) | `galeriBaslik`, `galeriAciklamasi`, `resim` (File - Ana), `detay_resimler` (File[] - Detay) |
+| `PUT` | `/api/galeri/:id` | ✅ JWT | Galeri güncelle | `galeriBaslik`, `galeriAciklamasi`, `resim`, `detay_resimler` |
+| `DELETE` | `/api/galeri/:id` | ✅ JWT | Galeri sil (Tüm resimler silinir) | - |
+| `DELETE` | `/api/galeri/:id/image`| ✅ JWT | **Tekil Detay Resmi Sil** | JSON Body: `{ "filename": "resim.jpg" }` |
 
-Tüm galeri öğelerini listeler.
+### 2.5. Ana Sayfa İçerik
 
-**Auth:** ❌ Gerekmez
+| Method | Endpoint | Auth | Açıklama | Body (Multipart/Form-Data) |
+| :--- | :--- | :--- | :--- | :--- |
+| `GET` | `/api/anasayfa` | ❌ JWT Yok | İçerikleri listele | - |
+| `POST` | `/api/anasayfa` | ✅ JWT | İçerik ekle | `baslik`, `icerik`, `resim` (File) |
+| `PUT` | `/api/anasayfa/:id` | ✅ JWT | İçerik güncelle | `baslik`, `icerik`, `resim` (File) |
+| `DELETE` | `/api/anasayfa/:id` | ✅ JWT | İçerik sil | - |
 
-**Response (200 OK):**
-```json
-[
-  {
-    "İD": 1,
-    "Galeri_başlık": "Proje 1",
-    "Galeri_resim": "proje1.jpg"
-  }
-]
-```
+### 2.6. İletişim & Mesajlar
 
----
-
-### `GET /api/galeri/:id`
-
-Belirtilen ID'ye sahip galeri öğesini getirir.
-
-**Auth:** ❌ Gerekmez
-
-**URL Parametreleri:**
-| Parametre | Tip     | Açıklama          |
-|-----------|---------|-------------------|
-| `id`      | Integer | Galeri öğesi ID'si|
-
-**Response (200 OK):**
-```json
-{
-  "İD": 1,
-  "Galeri_başlık": "Proje 1",
-  "Galeri_resim": "proje1.jpg",
-  "Galeri_açıklaması": "Bu proje hakkında detaylı bilgi..."
-}
-```
-
-**Response (404 Not Found):**
-```json
-{
-  "message": "Galeri öğesi bulunamadı."
-}
-```
+| Method | Endpoint | Auth | Açıklama | Body | Notlar |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| `POST` | `/api/iletisim` | ❌ JWT Yok | Mesaj gönder | `{adSoyad, ePosta, konu, mesaj}` | Rate Limit: 5/saat |
+| `GET` | `/api/iletisim` | ✅ JWT | Mesajları listele | - | - |
+| `GET` | `/api/iletisim/:id` | ✅ JWT | Mesaj detayını gör | - | - |
+| `DELETE` | `/api/iletisim/:id` | ✅ JWT | Mesajı sil | - | - |
+| `DELETE` | `/api/iletisim` | ✅ JWT | Toplu sil (Seçilenler) | `{ ids: [1, 2, 3] }` | - |
 
 ---
 
-### `POST /api/galeri`
-
-Yeni bir galeri öğesi oluşturur ve resim dosyası yükler.
-
-**Auth:** ✅ JWT Token Gerekli
-
-**Content-Type:** `multipart/form-data`
-
-**Form Data:**
-| Alan               | Tip     | Açıklama                                    |
-|--------------------|---------|---------------------------------------------|
-| `Galeri_başlık`    | string  | Galeri başlığı (zorunlu)                    |
-| `Galeri_açıklaması`| string  | Galeri açıklaması (opsiyonel)               |
-| `resim`            | file    | Resim dosyası (png, jpg, gif, webp, svg - max 5MB) |
-
-**Örnek cURL İsteği:**
-```bash
-curl -X POST http://localhost:3000/api/galeri \
-  -H "Authorization: Bearer <token>" \
-  -F "Galeri_başlık=Yeni Proje" \
-  -F "Galeri_açıklaması=Proje açıklaması..." \
-  -F "resim=@/path/to/image.jpg"
-```
-
-**Response (201 Created):**
-```json
-{
-  "İD": 2,
-  "Galeri_başlık": "Yeni Proje",
-  "Galeri_resim": "1736610000000-123456789.jpg",
-  "Galeri_açıklaması": "Açıklama..."
-}
-```
-
----
-
-### `PUT /api/galeri/:id`
-
-Belirtilen ID'ye sahip galeri öğesini günceller. Yeni resim yüklenirse eski resim otomatik silinir.
-
-**Auth:** ✅ JWT Token Gerekli
-
-**Content-Type:** `multipart/form-data`
-
-**URL Parametreleri:**
-| Parametre | Tip     | Açıklama              |
-|-----------|---------|----------------------|
-| `id`      | Integer | Güncellenecek kayıt ID'si |
-
-**Form Data:**
-| Alan               | Tip     | Açıklama                                    |
-|--------------------|---------|---------------------------------------------|
-| `Galeri_başlık`    | string  | Galeri başlığı (opsiyonel)                  |
-| `Galeri_açıklaması`| string  | Galeri açıklaması (opsiyonel)               |
-| `resim`            | file    | Yeni resim dosyası (opsiyonel - max 5MB)    |
-
-**Response (200 OK):**
-```json
-{
-  "İD": 1,
-  "Galeri_başlık": "Güncellenmiş Başlık",
-  "Galeri_resim": "1736610500000-987654321.jpg",
-  "Galeri_açıklaması": "Güncellenmiş açıklama..."
-}
-```
-
----
-
-### `DELETE /api/galeri/:id`
-
-Belirtilen ID'ye sahip galeri öğesini ve ilişkili resim dosyasını siler.
-
-**Auth:** ✅ JWT Token Gerekli
-
-**URL Parametreleri:**
-| Parametre | Tip     | Açıklama          |
-|-----------|---------|-------------------|
-| `id`      | Integer | Silinecek kayıt ID'si |
-
-**Response (204 No Content):** Başarılı, gövde yok.
-
----
-
-## 4. Hizmetler
-
-### `GET /api/hizmetler`
-
-Tüm hizmetleri listeler.
-
-**Auth:** ❌ Gerekmez
-
-**Response (200 OK):**
-```json
-[
-  {
-    "İD": 1,
-    "Hizmet_adı": "Web Geliştirme",
-    "Hizmet_açıklaması": "Modern web uygulamaları geliştiriyoruz.",
-    "Hizmet_Kategorisi": "Yazılım",
-    "Hizmet_resim": "web.jpg"
-  }
-]
-```
-
----
-
-### `POST /api/hizmetler`
-
-Yeni bir hizmet oluşturur ve resim dosyası yükler.
-
-**Auth:** ✅ JWT Token Gerekli
-
-**Content-Type:** `multipart/form-data`
-
-**Form Data:**
-| Alan                | Tip     | Açıklama                                    |
-|---------------------|---------|---------------------------------------------|
-| `Hizmet_adı`        | string  | Hizmet adı (zorunlu)                        |
-| `Hizmet_açıklaması` | string  | Hizmet açıklaması (opsiyonel)               |
-| `Hizmet_Kategorisi` | string  | Hizmet kategorisi (opsiyonel)               |
-| `resim`             | file    | Resim dosyası (png, jpg, gif, webp, svg - max 5MB) |
-
-**Örnek cURL İsteği:**
-```bash
-curl -X POST http://localhost:3000/api/hizmetler \
-  -H "Authorization: Bearer <token>" \
-  -F "Hizmet_adı=Web Geliştirme" \
-  -F "Hizmet_açıklaması=Modern web uygulamaları..." \
-  -F "Hizmet_Kategorisi=Yazılım" \
-  -F "resim=@/path/to/image.jpg"
-```
-
-**Response (201 Created):**
-```json
-{
-  "İD": 2,
-  "Hizmet_adı": "Mobil Uygulama",
-  "Hizmet_açıklaması": "iOS ve Android uygulamaları...",
-  "Hizmet_Kategorisi": "Yazılım",
-  "Hizmet_resim": "1736610000000-123456789.jpg"
-}
-```
-
----
-
-### `PUT /api/hizmetler/:id`
-
-Belirtilen ID'ye sahip hizmeti günceller. Yeni resim yüklenirse eski resim otomatik silinir.
-
-**Auth:** ✅ JWT Token Gerekli
-
-**Content-Type:** `multipart/form-data`
-
-**URL Parametreleri:**
-| Parametre | Tip     | Açıklama              |
-|-----------|---------|----------------------|
-| `id`      | Integer | Güncellenecek kayıt ID'si |
-
-**Form Data:**
-| Alan                | Tip     | Açıklama                                    |
-|---------------------|---------|---------------------------------------------|
-| `Hizmet_adı`        | string  | Hizmet adı (opsiyonel)                      |
-| `Hizmet_açıklaması` | string  | Hizmet açıklaması (opsiyonel)               |
-| `Hizmet_Kategorisi` | string  | Hizmet kategorisi (opsiyonel)               |
-| `resim`             | file    | Yeni resim dosyası (opsiyonel - max 5MB)    |
-
-**Response (200 OK):**
-```json
-{
-  "İD": 1,
-  "Hizmet_adı": "Güncellenmiş Hizmet",
-  "Hizmet_açıklaması": "Yeni açıklama...",
-  "Hizmet_Kategorisi": "Yeni Kategori",
-  "Hizmet_resim": "1736610500000-987654321.jpg"
-}
-```
-
----
-
-### `DELETE /api/hizmetler/:id`
-
-Belirtilen ID'ye sahip hizmeti ve ilişkili resim dosyasını siler.
-
-**Auth:** ✅ JWT Token Gerekli
-
-**URL Parametreleri:**
-| Parametre | Tip     | Açıklama           |
-|-----------|---------|-------------------|
-| `id`      | Integer | Silinecek kayıt ID'si |
-
-**Response (204 No Content):** Başarılı, gövde yok.
-
----
-
-## 5. Slider
-
-### `GET /api/slider`
-
-Tüm slider öğelerini listeler.
-
-**Auth:** ❌ Gerekmez
-
-**Response (200 OK):**
-```json
-[
-  {
-    "İD": 1,
-    "Slider_ad": "Ana Banner",
-    "Slider_resim": "banner1.jpg"
-  }
-]
-```
-
----
-
-### `GET /api/slider/:id`
-
-Belirtilen ID'ye sahip slider öğesini getirir.
-
-**Auth:** ❌ Gerekmez
-
-**URL Parametreleri:**
-| Parametre | Tip     | Açıklama           |
-|-----------|---------|-------------------|
-| `id`      | Integer | Slider öğesi ID'si |
-
-**Response (200 OK):**
-```json
-{
-  "İD": 1,
-  "Slider_ad": "Ana Banner",
-  "Slider_resim": "banner1.jpg"
-}
-```
-
-**Response (404 Not Found):**
-```json
-{
-  "message": "Slider öğesi bulunamadı."
-}
-```
-
----
-
-### `POST /api/slider`
-
-Yeni bir slider öğesi oluşturur ve resim dosyası yükler.
-
-**Auth:** ✅ JWT Token Gerekli
-
-**Content-Type:** `multipart/form-data`
-
-**Form Data:**
-| Alan        | Tip     | Açıklama                                    |
-|-------------|---------|---------------------------------------------|
-| `Slider_ad` | string  | Slider adı (zorunlu)                        |
-| `resim`     | file    | Resim dosyası (png, jpg, gif, webp, svg - max 5MB) |
-
-**Örnek cURL İsteği:**
-```bash
-curl -X POST http://localhost:3000/api/slider \
-  -H "Authorization: Bearer <token>" \
-  -F "Slider_ad=Ana Banner" \
-  -F "resim=@/path/to/image.jpg"
-```
-
-**Response (201 Created):**
-```json
-{
-  "İD": 2,
-  "Slider_ad": "Yeni Banner",
-  "Slider_resim": "1736610000000-123456789.jpg"
-}
-```
-
-**Not:** `Slider_resim` alanı otomatik olarak oluşturulan benzersiz dosya adını içerir. Resme şu URL ile erişilebilir: `http://localhost:3000/images/<Slider_resim>`
-
----
-
-### `PUT /api/slider/:id`
-
-Belirtilen ID'ye sahip slider öğesini günceller. Yeni resim yüklenirse eski resim otomatik silinir.
-
-**Auth:** ✅ JWT Token Gerekli
-
-**Content-Type:** `multipart/form-data`
-
-**URL Parametreleri:**
-| Parametre | Tip     | Açıklama              |
-|-----------|---------|----------------------|
-| `id`      | Integer | Güncellenecek kayıt ID'si |
-
-**Form Data:**
-| Alan        | Tip     | Açıklama                                    |
-|-------------|---------|---------------------------------------------|
-| `Slider_ad` | string  | Slider adı (opsiyonel)                      |
-| `resim`     | file    | Yeni resim dosyası (opsiyonel - max 5MB)    |
-
-**Örnek cURL İsteği:**
-```bash
-curl -X PUT http://localhost:3000/api/slider/1 \
-  -H "Authorization: Bearer <token>" \
-  -F "Slider_ad=Güncellenmiş Banner" \
-  -F "resim=@/path/to/new_image.jpg"
-```
-
-**Response (200 OK):**
-```json
-{
-  "İD": 1,
-  "Slider_ad": "Güncellenmiş Banner",
-  "Slider_resim": "1736610500000-987654321.jpg"
-}
-```
-
----
-
-### `DELETE /api/slider/:id`
-
-Belirtilen ID'ye sahip slider öğesini ve ilişkili resim dosyasını siler.
-
-**Auth:** ✅ JWT Token Gerekli
-
-**URL Parametreleri:**
-| Parametre | Tip     | Açıklama           |
-|-----------|---------|-------------------|
-| `id`      | Integer | Silinecek kayıt ID'si |
-
-**Response (204 No Content):** Başarılı, gövde yok.
-
----
-
-## 6. İletişim
-
-İletişim formu için API endpoint'leri. Ziyaretçiler mesaj gönderebilir, adminler mesajları yönetebilir.
-
-### `POST /api/iletisim`
-
-Yeni bir iletişim mesajı gönderir. **Spam koruması için sert rate limiting uygulanır.**
-
-**Auth:** ❌ Gerekmez (Public)
-
-**Rate Limit:** ⚠️ **1 saatte en fazla 5 mesaj** (IP bazlı)
-
-**Request Body:**
-```json
-{
-  "Ad_Soyad": "string (zorunlu, 2-100 karakter)",
-  "E_posta": "string (zorunlu, geçerli e-posta)",
-  "Konu": "string (zorunlu, 3-200 karakter)",
-  "Mesaj": "string (zorunlu, 10-5000 karakter)"
-}
-```
-
-**Örnek cURL İsteği:**
-```bash
-curl -X POST http://localhost:3000/api/iletisim \
-  -H "Content-Type: application/json" \
-  -d '{
-    "Ad_Soyad": "Mehmet Yılmaz",
-    "E_posta": "mehmet@example.com",
-    "Konu": "İş Birliği Teklifi",
-    "Mesaj": "Merhaba, projenizle ilgili görüşmek istiyorum..."
-  }'
-```
-
-**Response (201 Created):**
-```json
-{
-  "message": "Mesajınız başarıyla gönderildi.",
-  "id": 1
-}
-```
-
-**Response (429 Too Many Requests):**
-```json
-{
-  "message": "Çok fazla mesaj gönderdiniz. Lütfen 1 saat sonra tekrar deneyin.",
-  "retryAfter": "1 saat"
-}
-```
-
----
-
-### `GET /api/iletisim`
-
-Tüm iletişim mesajlarını listeler (en yeniden eskiye).
-
-**Auth:** ✅ JWT Token Gerekli (Admin)
-
-**Response (200 OK):**
-```json
-[
-  {
-    "İD": 1,
-    "Ad_Soyad": "Mehmet Yılmaz",
-    "E_posta": "mehmet@example.com",
-    "Konu": "İş Birliği Teklifi",
-    "Mesaj": "Merhaba, projenizle ilgili görüşmek istiyorum...",
-    "createdAt": "2026-01-11T16:00:00.000Z"
-  }
-]
-```
-
----
-
-### `GET /api/iletisim/:id`
-
-Belirtilen ID'ye sahip mesajı getirir.
-
-**Auth:** ✅ JWT Token Gerekli (Admin)
-
-**URL Parametreleri:**
-| Parametre | Tip     | Açıklama           |
-|-----------|---------|-------------------|
-| `id`      | Integer | Mesaj ID'si        |
-
-**Response (200 OK):**
-```json
-{
-  "İD": 1,
-  "Ad_Soyad": "Mehmet Yılmaz",
-  "E_posta": "mehmet@example.com",
-  "Konu": "İş Birliği Teklifi",
-  "Mesaj": "Merhaba, projenizle ilgili görüşmek istiyorum...",
-  "createdAt": "2026-01-11T16:00:00.000Z"
-}
-```
-
----
-
-### `DELETE /api/iletisim/:id`
-
-Belirtilen ID'ye sahip mesajı siler.
-
-**Auth:** ✅ JWT Token Gerekli (Admin)
-
-**URL Parametreleri:**
-| Parametre | Tip     | Açıklama           |
-|-----------|---------|-------------------|
-| `id`      | Integer | Silinecek mesaj ID'si |
-
-**Response (204 No Content):** Başarılı, gövde yok.
-
----
-
-### `DELETE /api/iletisim`
-
-Birden fazla mesajı toplu olarak siler.
-
-**Auth:** ✅ JWT Token Gerekli (Admin)
-
-**Request Body:**
-```json
-{
-  "ids": [1, 2, 3]
-}
-```
-
-**Response (200 OK):**
-```json
-{
-  "message": "3 mesaj silindi.",
-  "deletedCount": 3
-}
-```
-
----
-
-
-## 7. Hata Kodları
-
-| Kod | Açıklama                                      |
-|-----|----------------------------------------------|
-| 200 | İstek başarılı                               |
-| 201 | Kayıt başarıyla oluşturuldu                  |
-| 204 | İşlem başarılı, dönen veri yok               |
-| 400 | Geçersiz istek (eksik veya hatalı parametreler) |
-| 401 | Yetkisiz erişim (geçersiz veya eksik token)  |
-| 403 | Token gerekli                                |
-| 404 | Kayıt bulunamadı                             |
-| 429 | Çok fazla istek (rate limit aşıldı)          |
-| 500 | Sunucu hatası                                |
-
----
-
-## 🛡️ Güvenlik Notları
-
-- **Rate Limiting:** Tüm `/api/*` endpoint'leri 15 dakikada 100 istek ile sınırlıdır.
-- **Auth Rate Limiting:** `/api/auth/login` endpoint'i 15 dakikada 10 istek ile sınırlıdır (brute-force koruması).
-- **İletişim Rate Limiting:** `/api/iletisim` POST endpoint'i **1 saatte 5 mesaj** ile sınırlıdır (spam koruması).
-- **Helmet:** HTTP güvenlik başlıkları aktif.
-- **CORS:** Cross-Origin Resource Sharing aktif.
-- **Body Limit:** Request body boyutu 10KB ile sınırlı (DoS koruması).
-
----
-
-## 📁 Statik Dosyalar
-
-Resim dosyalarına şu URL üzerinden erişilebilir:
-
-```
-GET /images/<dosya_adı>
-```
-
-**Örnek:** `http://localhost:3000/images/banner1.jpg`
-
----
-
-*Son güncelleme: 11 Ocak 2026*
-Harici resim yükleme endpoint'i. Frontend'in bağımsız resim yükleyip URL alması için kullanılır.
-
-### `POST /api/upload`
-
-Resim dosyası yükler ve dosya URL'ini döner.
-
-**Auth:** ✅ JWT Token Gerekli
-
-**Content-Type:** `multipart/form-data`
-
-**Form Data:**
-| Alan    | Tip  | Açıklama                                       |
-|---------|------|------------------------------------------------|
-| `image` | file | Resim dosyası (png, jpg, gif, webp, svg - max 5MB) |
-
-**Örnek cURL İsteği:**
-```bash
-curl -X POST http://localhost:3000/api/upload \
-  -H "Authorization: Bearer <token>" \
-  -F "image=@/path/to/image.jpg"
-```
-
-**Response (200 OK):**
-```json
-{
-  "message": "Resim başarıyla yüklendi.",
-  "url": "/images/1736610000000-123456789.jpg",
-  "filename": "1736610000000-123456789.jpg"
-}
-## 7. Dosya Yükleme (Upload)
-
-Harici resim yükleme endpoint'i. Frontend'in bağımsız resim yükleyip URL alması için kullanılır.
-
-### `POST /api/upload`
-
-Resim dosyası yükler ve dosya URL'ini döner.
-
-**Auth:** ✅ JWT Token Gerekli
-
-**Content-Type:** `multipart/form-data`
-
-**Form Data:**
-| Alan    | Tip  | Açıklama                                       |
-|---------|------|------------------------------------------------|
-| `image` | file | Resim dosyası (png, jpg, gif, webp, svg - max 5MB) |
-
-**Örnek cURL İsteği:**
-```bash
-curl -X POST http://localhost:3000/api/upload \
-  -H "Authorization: Bearer <token>" \
-  -F "image=@/path/to/image.jpg"
-```
-
-**Response (200 OK):**
-```json
-{
-  "message": "Resim başarıyla yüklendi.",
-  "url": "/images/1736610000000-123456789.jpg",
-  "filename": "1736610000000-123456789.jpg"
-}
-```
-
----
-
-```
-
----
-
-## 8. Hata Kodları
-
-| Kod | Açıklama                                      |
-|-----|----------------------------------------------|
-| 200 | İstek başarılı                               |
-| 201 | Kayıt başarıyla oluşturuldu                  |
-| 204 | İşlem başarılı, dönen veri yok               |
-| 400 | Geçersiz istek (eksik veya hatalı parametreler) |
-| 401 | Yetkisiz erişim (geçersiz veya eksik token)  |
-| 403 | Token gerekli                                |
-| 404 | Kayıt bulunamadı                             |
-| 429 | Çok fazla istek (rate limit aşıldı)          |
-| 500 | Sunucu hatası                                |
-
----
-
-## 🛡️ Güvenlik Notları
-
-- **Rate Limiting:** Tüm `/api/*` endpoint'leri 15 dakikada 100 istek ile sınırlıdır.
-- **Auth Rate Limiting:** `/api/auth/login` endpoint'i 15 dakikada 10 istek ile sınırlıdır (brute-force koruması).
-- **İletişim Rate Limiting:** `/api/iletisim` POST endpoint'i **1 saatte 5 mesaj** ile sınırlıdır (spam koruması).
-- **Helmet:** HTTP güvenlik başlıkları aktif.
-- **CORS:** Cross-Origin Resource Sharing aktif.
-- **Body Limit:** Request body boyutu 10KB ile sınırlı (DoS koruması).
-
----
-
-## 📁 Statik Dosyalar
-
-Resim dosyalarına şu URL üzerinden erişilebilir:
-
-```
-GET /images/<dosya_adı>
-```
-
-**Örnek:** `http://localhost:3000/images/banner1.jpg`
-
----
-
-*Son güncelleme: 11 Ocak 2026*
+## 3. Güvenlik & Standartlar
+
+1.  **JWT Authentication:** Admin işlemleri için `Authorization: Bearer <token>` header'ı zorunludur.
+2.  **Rate Limiting:**
+    *   Genel API: 100 istek / 15 dakika.
+    *   Login: 10 istek / 15 dakika (Brute-force koruması).
+    *   İletişim Formu: 5 istek / 1 saat (Spam koruması).
+3.  **Dosya Yükleme:**
+    *   Sadece `jpeg, jpg, png, gif, webp, svg` formatları desteklenir.
+    *   Maksimum dosya boyutu: **5MB**.
+    *   Dosyalar `public/images` klasöründe saklanır.
+4.  **Hata Yönetimi:** Tüm hatalar JSON formatında `{ message: "Hata detayı" }` şeklinde döner.
+5.  **Multi-part Upload:** Tüm dosya yükleme işlemleri için `multipart/form-data` content-type kullanılmalıdır. JSON body ile dosya yüklenemez.
