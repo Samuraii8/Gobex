@@ -10,7 +10,10 @@ router.get('/:id', galeriController.getGaleriById);
 // POST - Resim yüklemeli galeri oluşturma
 router.post('/',
     authMiddleware,
-    upload.single('resim'),
+    upload.fields([
+        { name: 'resim', maxCount: 1 },
+        { name: 'detay_resimler', maxCount: 20 }
+    ]),
     handleUploadError,
     galeriController.createGaleri
 );
@@ -18,11 +21,17 @@ router.post('/',
 // PUT - Resim yüklemeli galeri güncelleme
 router.put('/:id',
     authMiddleware,
-    upload.single('resim'),
+    upload.fields([
+        { name: 'resim', maxCount: 1 },
+        { name: 'detay_resimler', maxCount: 20 }
+    ]),
     handleUploadError,
     galeriController.updateGaleri
 );
 
 router.delete('/:id', authMiddleware, galeriController.deleteGaleri);
+
+// Detay resmi silme (Body: { filename: "..." })
+router.delete('/:id/image', authMiddleware, galeriController.deleteGaleriDetailImage);
 
 module.exports = router;

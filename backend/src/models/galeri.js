@@ -27,6 +27,10 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.STRING,
       allowNull: true
     },
+    Galeri_Detay_Resimler: {
+      type: DataTypes.TEXT,
+      allowNull: true
+    },
     Galeri_açıklaması: {
       type: DataTypes.TEXT,
       allowNull: true
