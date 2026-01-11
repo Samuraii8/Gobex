@@ -14,7 +14,8 @@ Bu belge, Gobex Backend projesinde bulunan tüm API endpoint'lerini detaylı ola
 4. [Hizmetler](#4-hizmetler)
 5. [Slider](#5-slider)
 6. [İletişim](#6-i̇letişim)
-7. [Hata Kodları](#7-hata-kodları)
+7. [Dosya Yükleme (Upload)](#7-dosya-yükleme-upload)
+8. [Hata Kodları](#8-hata-kodları)
 
 ---
 
@@ -687,7 +688,79 @@ Birden fazla mesajı toplu olarak siler.
 
 ---
 
-## 7. Hata Kodları
+---
+
+## 7. Dosya Yükleme (Upload)
+
+Harici resim yükleme endpoint'i. Frontend'in bağımsız resim yükleyip URL alması için kullanılır.
+
+### `POST /api/upload`
+
+Resim dosyası yükler ve dosya URL'ini döner.
+
+**Auth:** ✅ JWT Token Gerekli
+
+**Content-Type:** `multipart/form-data`
+
+**Form Data:**
+| Alan    | Tip  | Açıklama                                       |
+|---------|------|------------------------------------------------|
+| `image` | file | Resim dosyası (png, jpg, gif, webp, svg - max 5MB) |
+
+**Örnek cURL İsteği:**
+```bash
+curl -X POST http://localhost:3000/api/upload \
+  -H "Authorization: Bearer <token>" \
+  -F "image=@/path/to/image.jpg"
+```
+
+**Response (200 OK):**
+```json
+{
+  "message": "Resim başarıyla yüklendi.",
+  "url": "/images/1736610000000-123456789.jpg",
+  "filename": "1736610000000-123456789.jpg"
+}
+## 7. Dosya Yükleme (Upload)
+
+Harici resim yükleme endpoint'i. Frontend'in bağımsız resim yükleyip URL alması için kullanılır.
+
+### `POST /api/upload`
+
+Resim dosyası yükler ve dosya URL'ini döner.
+
+**Auth:** ✅ JWT Token Gerekli
+
+**Content-Type:** `multipart/form-data`
+
+**Form Data:**
+| Alan    | Tip  | Açıklama                                       |
+|---------|------|------------------------------------------------|
+| `image` | file | Resim dosyası (png, jpg, gif, webp, svg - max 5MB) |
+
+**Örnek cURL İsteği:**
+```bash
+curl -X POST http://localhost:3000/api/upload \
+  -H "Authorization: Bearer <token>" \
+  -F "image=@/path/to/image.jpg"
+```
+
+**Response (200 OK):**
+```json
+{
+  "message": "Resim başarıyla yüklendi.",
+  "url": "/images/1736610000000-123456789.jpg",
+  "filename": "1736610000000-123456789.jpg"
+}
+```
+
+---
+
+```
+
+---
+
+## 8. Hata Kodları
 
 | Kod | Açıklama                                      |
 |-----|----------------------------------------------|
