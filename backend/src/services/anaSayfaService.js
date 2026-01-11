@@ -4,6 +4,10 @@ const getAnaSayfaData = async () => {
   return await AnaSayfa.findAll();
 };
 
+const getAnaSayfaById = async (id) => {
+  return await AnaSayfa.findByPk(id);
+};
+
 const createAnaSayfa = async (data) => {
   return await AnaSayfa.create(data);
 };
@@ -22,6 +26,7 @@ const deleteAnaSayfa = async (id) => {
 
 module.exports = {
   getAnaSayfaData,
+  getAnaSayfaById,
   createAnaSayfa,
   updateAnaSayfa,
   deleteAnaSayfa,
