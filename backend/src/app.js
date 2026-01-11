@@ -51,9 +51,6 @@ app.use('/api/slider', sliderRoutes);
 const iletisimRoutes = require('./routes/iletisimRoutes');
 app.use('/api/iletisim', iletisimRoutes);
 
-const uploadRoutes = require('./routes/uploadRoutes');
-app.use('/api/upload', uploadRoutes);
-
 
 // Simple route for health check
 app.get('/', (req, res) => {

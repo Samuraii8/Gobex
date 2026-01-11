@@ -14,8 +14,7 @@ Bu belge, Gobex Backend projesinde bulunan tüm API endpoint'lerini detaylı ola
 4. [Hizmetler](#4-hizmetler)
 5. [Slider](#5-slider)
 6. [İletişim](#6-i̇letişim)
-7. [Dosya Yükleme (Upload)](#7-dosya-yükleme-upload)
-8. [Hata Kodları](#8-hata-kodları)
+7. [Hata Kodları](#7-hata-kodları)
 
 ---
 
@@ -688,10 +687,47 @@ Birden fazla mesajı toplu olarak siler.
 
 ---
 
+
+## 7. Hata Kodları
+
+| Kod | Açıklama                                      |
+|-----|----------------------------------------------|
+| 200 | İstek başarılı                               |
+| 201 | Kayıt başarıyla oluşturuldu                  |
+| 204 | İşlem başarılı, dönen veri yok               |
+| 400 | Geçersiz istek (eksik veya hatalı parametreler) |
+| 401 | Yetkisiz erişim (geçersiz veya eksik token)  |
+| 403 | Token gerekli                                |
+| 404 | Kayıt bulunamadı                             |
+| 429 | Çok fazla istek (rate limit aşıldı)          |
+| 500 | Sunucu hatası                                |
+
 ---
 
-## 7. Dosya Yükleme (Upload)
+## 🛡️ Güvenlik Notları
 
+- **Rate Limiting:** Tüm `/api/*` endpoint'leri 15 dakikada 100 istek ile sınırlıdır.
+- **Auth Rate Limiting:** `/api/auth/login` endpoint'i 15 dakikada 10 istek ile sınırlıdır (brute-force koruması).
+- **İletişim Rate Limiting:** `/api/iletisim` POST endpoint'i **1 saatte 5 mesaj** ile sınırlıdır (spam koruması).
+- **Helmet:** HTTP güvenlik başlıkları aktif.
+- **CORS:** Cross-Origin Resource Sharing aktif.
+- **Body Limit:** Request body boyutu 10KB ile sınırlı (DoS koruması).
+
+---
+
+## 📁 Statik Dosyalar
+
+Resim dosyalarına şu URL üzerinden erişilebilir:
+
+```
+GET /images/<dosya_adı>
+```
+
+**Örnek:** `http://localhost:3000/images/banner1.jpg`
+
+---
+
+*Son güncelleme: 11 Ocak 2026*
 Harici resim yükleme endpoint'i. Frontend'in bağımsız resim yükleyip URL alması için kullanılır.
 
 ### `POST /api/upload`

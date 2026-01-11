@@ -29,11 +29,16 @@ const createSlider = async (req, res) => {
   try {
     const { Slider_ad } = req.body;
 
-    // Dosya yüklendiyse path'i al
+    // 1. Durum: Dosya direkt yüklendiyse (Multipart)
     let Slider_resim = null;
     if (req.file) {
       // Sadece dosya adını kaydet (public/images içinde olduğu için)
       Slider_resim = req.file.filename;
+    }
+    // 2. Durum: Dosya daha önce yüklendiyse ve path gönderildiyse (JSON Body)
+    else if (req.body.Slider_resim) {
+      // Gelen path '/images/dosya.jpg' formatındaysa sadece dosya adını al
+      Slider_resim = path.basename(req.body.Slider_resim);
     }
 
     const data = await sliderService.createSlider({
@@ -62,7 +67,7 @@ const updateSlider = async (req, res) => {
     // Mevcut slider'ı al (eski resmi silmek için)
     const existingSlider = await sliderService.getSliderDataById(id);
     if (!existingSlider) {
-      // Yüklenen dosyayı sil
+      // Yüklenen dosyayı sil (varsa)
       if (req.file) {
         const filePath = path.join(__dirname, '../../public/images', req.file.filename);
         if (fs.existsSync(filePath)) {
@@ -79,7 +84,7 @@ const updateSlider = async (req, res) => {
       updateData.Slider_ad = Slider_ad;
     }
 
-    // Yeni dosya yüklendiyse
+    // 1. Durum: Yeni dosya direkt yüklendiyse
     if (req.file) {
       // Eski dosyayı sil
       if (existingSlider.Slider_resim) {
@@ -89,6 +94,20 @@ const updateSlider = async (req, res) => {
         }
       }
       updateData.Slider_resim = req.file.filename;
+    }
+    // 2. Durum: Yeni dosya path'i string olarak geldiyse
+    else if (req.body.Slider_resim) {
+      const newFileName = path.basename(req.body.Slider_resim);
+      // Eğer dosya adı değiştiyse eskiyi sil ve yeniyi kaydet
+      if (existingSlider.Slider_resim !== newFileName) {
+        if (existingSlider.Slider_resim) {
+          const oldFilePath = path.join(__dirname, '../../public/images', existingSlider.Slider_resim);
+          if (fs.existsSync(oldFilePath)) {
+            fs.unlinkSync(oldFilePath);
+          }
+        }
+        updateData.Slider_resim = newFileName;
+      }
     }
 
     const updatedData = await sliderService.updateSlider(id, updateData);
