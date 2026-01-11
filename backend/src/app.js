@@ -34,7 +34,7 @@ app.use('/images', express.static(path.join(__dirname, '../public/images')));
 // Rotalar
 const authRoutes = require('./routes/authRoutes');
 // Login rotasına özel rate limiter uyguluyoruz
-app.use('/api/auth', authLimiter, authRoutes); 
+app.use('/api/auth', authLimiter, authRoutes);
 
 const anaSayfaRoutes = require('./routes/anaSayfaRoutes');
 app.use('/api/anasayfa', anaSayfaRoutes);
@@ -47,6 +47,9 @@ app.use('/api/hizmetler', hizmetlerRoutes);
 
 const sliderRoutes = require('./routes/sliderRoutes');
 app.use('/api/slider', sliderRoutes);
+
+const iletisimRoutes = require('./routes/iletisimRoutes');
+app.use('/api/iletisim', iletisimRoutes);
 
 // Simple route for health check
 app.get('/', (req, res) => {

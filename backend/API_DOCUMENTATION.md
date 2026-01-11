@@ -13,7 +13,8 @@ Bu belge, Gobex Backend projesinde bulunan tüm API endpoint'lerini detaylı ola
 3. [Galeri](#3-galeri)
 4. [Hizmetler](#4-hizmetler)
 5. [Slider](#5-slider)
-6. [Hata Kodları](#6-hata-kodları)
+6. [İletişim](#6-i̇letişim)
+7. [Hata Kodları](#7-hata-kodları)
 
 ---
 
@@ -549,7 +550,144 @@ Belirtilen ID'ye sahip slider öğesini ve ilişkili resim dosyasını siler.
 
 ---
 
-## 6. Hata Kodları
+## 6. İletişim
+
+İletişim formu için API endpoint'leri. Ziyaretçiler mesaj gönderebilir, adminler mesajları yönetebilir.
+
+### `POST /api/iletisim`
+
+Yeni bir iletişim mesajı gönderir. **Spam koruması için sert rate limiting uygulanır.**
+
+**Auth:** ❌ Gerekmez (Public)
+
+**Rate Limit:** ⚠️ **1 saatte en fazla 5 mesaj** (IP bazlı)
+
+**Request Body:**
+```json
+{
+  "Ad_Soyad": "string (zorunlu, 2-100 karakter)",
+  "E_posta": "string (zorunlu, geçerli e-posta)",
+  "Konu": "string (zorunlu, 3-200 karakter)",
+  "Mesaj": "string (zorunlu, 10-5000 karakter)"
+}
+```
+
+**Örnek cURL İsteği:**
+```bash
+curl -X POST http://localhost:3000/api/iletisim \
+  -H "Content-Type: application/json" \
+  -d '{
+    "Ad_Soyad": "Mehmet Yılmaz",
+    "E_posta": "mehmet@example.com",
+    "Konu": "İş Birliği Teklifi",
+    "Mesaj": "Merhaba, projenizle ilgili görüşmek istiyorum..."
+  }'
+```
+
+**Response (201 Created):**
+```json
+{
+  "message": "Mesajınız başarıyla gönderildi.",
+  "id": 1
+}
+```
+
+**Response (429 Too Many Requests):**
+```json
+{
+  "message": "Çok fazla mesaj gönderdiniz. Lütfen 1 saat sonra tekrar deneyin.",
+  "retryAfter": "1 saat"
+}
+```
+
+---
+
+### `GET /api/iletisim`
+
+Tüm iletişim mesajlarını listeler (en yeniden eskiye).
+
+**Auth:** ✅ JWT Token Gerekli (Admin)
+
+**Response (200 OK):**
+```json
+[
+  {
+    "İD": 1,
+    "Ad_Soyad": "Mehmet Yılmaz",
+    "E_posta": "mehmet@example.com",
+    "Konu": "İş Birliği Teklifi",
+    "Mesaj": "Merhaba, projenizle ilgili görüşmek istiyorum...",
+    "createdAt": "2026-01-11T16:00:00.000Z"
+  }
+]
+```
+
+---
+
+### `GET /api/iletisim/:id`
+
+Belirtilen ID'ye sahip mesajı getirir.
+
+**Auth:** ✅ JWT Token Gerekli (Admin)
+
+**URL Parametreleri:**
+| Parametre | Tip     | Açıklama           |
+|-----------|---------|-------------------|
+| `id`      | Integer | Mesaj ID'si        |
+
+**Response (200 OK):**
+```json
+{
+  "İD": 1,
+  "Ad_Soyad": "Mehmet Yılmaz",
+  "E_posta": "mehmet@example.com",
+  "Konu": "İş Birliği Teklifi",
+  "Mesaj": "Merhaba, projenizle ilgili görüşmek istiyorum...",
+  "createdAt": "2026-01-11T16:00:00.000Z"
+}
+```
+
+---
+
+### `DELETE /api/iletisim/:id`
+
+Belirtilen ID'ye sahip mesajı siler.
+
+**Auth:** ✅ JWT Token Gerekli (Admin)
+
+**URL Parametreleri:**
+| Parametre | Tip     | Açıklama           |
+|-----------|---------|-------------------|
+| `id`      | Integer | Silinecek mesaj ID'si |
+
+**Response (204 No Content):** Başarılı, gövde yok.
+
+---
+
+### `DELETE /api/iletisim`
+
+Birden fazla mesajı toplu olarak siler.
+
+**Auth:** ✅ JWT Token Gerekli (Admin)
+
+**Request Body:**
+```json
+{
+  "ids": [1, 2, 3]
+}
+```
+
+**Response (200 OK):**
+```json
+{
+  "message": "3 mesaj silindi.",
+  "deletedCount": 3
+}
+```
+
+---
+
+## 7. Hata Kodları
 
 | Kod | Açıklama                                      |
 |-----|----------------------------------------------|
@@ -569,6 +707,7 @@ Belirtilen ID'ye sahip slider öğesini ve ilişkili resim dosyasını siler.
 
 - **Rate Limiting:** Tüm `/api/*` endpoint'leri 15 dakikada 100 istek ile sınırlıdır.
 - **Auth Rate Limiting:** `/api/auth/login` endpoint'i 15 dakikada 10 istek ile sınırlıdır (brute-force koruması).
+- **İletişim Rate Limiting:** `/api/iletisim` POST endpoint'i **1 saatte 5 mesaj** ile sınırlıdır (spam koruması).
 - **Helmet:** HTTP güvenlik başlıkları aktif.
 - **CORS:** Cross-Origin Resource Sharing aktif.
 - **Body Limit:** Request body boyutu 10KB ile sınırlı (DoS koruması).
