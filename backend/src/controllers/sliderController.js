@@ -7,7 +7,8 @@ const getAllSlider = async (req, res) => {
     const data = await sliderService.getAllSliderData();
     res.status(200).json(data);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error('GetAllSlider Error:', error);
+    res.status(500).json({ message: 'Slider listesi getirilirken bir hata oluştu.' });
   }
 };
 
@@ -21,7 +22,8 @@ const getSliderById = async (req, res) => {
       res.status(404).json({ message: 'Slider öğesi bulunamadı.' });
     }
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error('GetSliderById Error:', error);
+    res.status(500).json({ message: 'Slider detayı getirilirken bir hata oluştu.' });
   }
 };
 
@@ -48,7 +50,8 @@ const createSlider = async (req, res) => {
         fs.unlinkSync(filePath);
       }
     }
-    res.status(500).json({ message: error.message });
+    console.error('CreateSlider Error:', error);
+    res.status(500).json({ message: 'Slider oluşturulurken bir hata oluştu.' });
   }
 };
 
@@ -98,7 +101,8 @@ const updateSlider = async (req, res) => {
         fs.unlinkSync(filePath);
       }
     }
-    res.status(500).json({ message: error.message });
+    console.error('UpdateSlider Error:', error);
+    res.status(500).json({ message: 'Slider güncellenirken bir hata oluştu.' });
   }
 };
 
@@ -125,7 +129,8 @@ const deleteSlider = async (req, res) => {
 
     res.status(204).send();
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error('DeleteSlider Error:', error);
+    res.status(500).json({ message: 'Slider silinirken bir hata oluştu.' });
   }
 };
 

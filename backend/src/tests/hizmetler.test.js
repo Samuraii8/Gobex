@@ -1,6 +1,6 @@
 const request = require('supertest');
 const app = require('../app');
-const { Hizmetler, Admin, sequelize } = require('../models');
+const prisma = require('../utils/prismaClient');
 const bcrypt = require('bcryptjs');
 
 let token;
@@ -9,10 +9,12 @@ let createdId;
 describe('Hizmetler API', () => {
   beforeAll(async () => {
     const hashedPassword = await bcrypt.hash('123456', 10);
-    await Admin.destroy({ where: { ad: 'testadmin_hizmetler' } });
-    await Admin.create({
-      ad: 'testadmin_hizmetler',
-      sifre: hashedPassword
+    await prisma.admin.deleteMany({ where: { ad: 'testadmin_hizmetler' } });
+    await prisma.admin.create({
+      data: {
+        ad: 'testadmin_hizmetler',
+        sifre: hashedPassword
+      }
     });
 
     const loginRes = await request(app)
@@ -22,9 +24,9 @@ describe('Hizmetler API', () => {
   });
 
   afterAll(async () => {
-    await Admin.destroy({ where: { ad: 'testadmin_hizmetler' } });
-    if (createdId) await Hizmetler.destroy({ where: { id: createdId } });
-    await sequelize.close();
+    await prisma.admin.deleteMany({ where: { ad: 'testadmin_hizmetler' } });
+    if (createdId) await prisma.hizmetler.deleteMany({ where: { id: createdId } });
+    await prisma.$disconnect();
   });
 
   it('POST /api/hizmetler - should create service', async () => {

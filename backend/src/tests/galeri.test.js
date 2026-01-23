@@ -1,6 +1,6 @@
 const request = require('supertest');
 const app = require('../app');
-const { Galeri, Admin, sequelize } = require('../models');
+const prisma = require('../utils/prismaClient');
 const bcrypt = require('bcryptjs');
 
 let token;
@@ -9,10 +9,12 @@ let createdId;
 describe('Galeri API', () => {
   beforeAll(async () => {
     const hashedPassword = await bcrypt.hash('123456', 10);
-    await Admin.destroy({ where: { ad: 'testadmin_galeri' } });
-    await Admin.create({
-      ad: 'testadmin_galeri',
-      sifre: hashedPassword
+    await prisma.admin.deleteMany({ where: { ad: 'testadmin_galeri' } });
+    await prisma.admin.create({
+      data: {
+        ad: 'testadmin_galeri',
+        sifre: hashedPassword
+      }
     });
 
     const loginRes = await request(app)
@@ -22,9 +24,9 @@ describe('Galeri API', () => {
   });
 
   afterAll(async () => {
-    await Admin.destroy({ where: { ad: 'testadmin_galeri' } });
-    if (createdId) await Galeri.destroy({ where: { id: createdId } });
-    await sequelize.close();
+    await prisma.admin.deleteMany({ where: { ad: 'testadmin_galeri' } });
+    if (createdId) await prisma.galeri.deleteMany({ where: { id: createdId } });
+    await prisma.$disconnect();
   });
 
   it('POST /api/galeri - should create gallery item', async () => {

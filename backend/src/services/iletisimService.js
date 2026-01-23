@@ -1,30 +1,44 @@
-const { Iletisim } = require('../models');
+const prisma = require('../utils/prismaClient');
 
 const getAllIletisim = async () => {
-    return await Iletisim.findAll({
-        order: [['createdAt', 'DESC']] // En yeni mesajlar önce
+    return await prisma.iletisim.findMany({
+        orderBy: { createdAt: 'desc' }
     });
 };
 
 const getIletisimById = async (id) => {
-    return await Iletisim.findByPk(id);
+    return await prisma.iletisim.findUnique({
+        where: { id: parseInt(id) }
+    });
 };
 
 const createIletisim = async (data) => {
-    return await Iletisim.create(data);
+    return await prisma.iletisim.create({
+        data: data
+    });
 };
 
 const deleteIletisim = async (id) => {
-    const iletisim = await Iletisim.findByPk(id);
-    if (!iletisim) return null;
-    return await iletisim.destroy();
+    try {
+        return await prisma.iletisim.delete({
+            where: { id: parseInt(id) }
+        });
+    } catch (error) {
+        if (error.code === 'P2025') return null;
+        throw error;
+    }
 };
 
 // Toplu silme (admin için)
 const deleteMultipleIletisim = async (ids) => {
-    return await Iletisim.destroy({
-        where: { id: ids }
+    const result = await prisma.iletisim.deleteMany({
+        where: {
+            id: {
+                in: ids.map(id => parseInt(id))
+            }
+        }
     });
+    return result.count;
 };
 
 module.exports = {

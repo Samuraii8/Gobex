@@ -3,6 +3,8 @@ const router = express.Router();
 const galeriController = require('../controllers/galeriController');
 const authMiddleware = require('../middleware/authMiddleware');
 const { upload, handleUploadError } = require('../middleware/uploadMiddleware');
+const validate = require('../middleware/validationMiddleware');
+const { galeriSchemas } = require('../validations/schemas');
 
 router.get('/', galeriController.getAllGaleri);
 router.get('/:id', galeriController.getGaleriById);
@@ -15,6 +17,7 @@ router.post('/',
         { name: 'detay_resimler', maxCount: 20 }
     ]),
     handleUploadError,
+    validate(galeriSchemas.createUpdate), // Multer body'i parse ettikten sonra validate ediyoruz
     galeriController.createGaleri
 );
 
@@ -26,6 +29,7 @@ router.put('/:id',
         { name: 'detay_resimler', maxCount: 20 }
     ]),
     handleUploadError,
+    validate(galeriSchemas.createUpdate),
     galeriController.updateGaleri
 );
 

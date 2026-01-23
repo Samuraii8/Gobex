@@ -1,0 +1,64 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Admin {
+  id    Int    @id @default(autoincrement())
+  ad    String @unique
+  sifre String
+
+  @@map("Tbl_Admin")
+}
+
+model AnaSayfa {
+  id     Int     @id @default(autoincrement())
+  baslik String
+  icerik String  @db.Text
+  resim  String?
+
+  @@map("Tbl_AnaSayfa")
+}
+
+model Galeri {
+  id                  Int     @id @default(autoincrement())
+  galeriBaslik        String
+  galeriResim         String?
+  galeriDetayResimler String? @db.Text
+  galeriAciklamasi    String? @db.Text
+
+  @@map("Tbl_Galeri")
+}
+
+model Hizmetler {
+  id               Int     @id @default(autoincrement())
+  hizmetAdi        String
+  hizmetAciklamasi String? @db.Text
+  hizmetKategorisi String?
+  hizmetResim      String?
+
+  @@map("Tbl_Hizmetler")
+}
+
+model Iletisim {
+  id        Int      @id @default(autoincrement())
+  adSoyad   String
+  ePosta    String
+  konu      String
+  mesaj     String   @db.Text
+  createdAt DateTime @default(now())
+
+  @@map("Tbl_Iletisim")
+}
+
+model Slider {
+  id          Int     @id @default(autoincrement())
+  sliderAd    String
+  sliderResim String?
+
+  @@map("Tbl_Slider")
+}

@@ -1,27 +1,42 @@
-const { Hizmetler } = require('../models');
+const prisma = require('../utils/prismaClient');
 
 const getAllHizmetlerData = async () => {
-  return await Hizmetler.findAll();
+  return await prisma.hizmetler.findMany();
 };
 
 const getHizmetById = async (id) => {
-  return await Hizmetler.findByPk(id);
+  return await prisma.hizmetler.findUnique({
+    where: { id: parseInt(id) }
+  });
 };
 
 const createHizmet = async (data) => {
-  return await Hizmetler.create(data);
+  return await prisma.hizmetler.create({
+    data: data
+  });
 };
 
 const updateHizmet = async (id, data) => {
-  const hizmet = await Hizmetler.findByPk(id);
-  if (!hizmet) return null;
-  return await hizmet.update(data);
+  try {
+    return await prisma.hizmetler.update({
+      where: { id: parseInt(id) },
+      data: data
+    });
+  } catch (error) {
+    if (error.code === 'P2025') return null;
+    throw error;
+  }
 };
 
 const deleteHizmet = async (id) => {
-  const hizmet = await Hizmetler.findByPk(id);
-  if (!hizmet) return null;
-  return await hizmet.destroy();
+  try {
+    return await prisma.hizmetler.delete({
+      where: { id: parseInt(id) }
+    });
+  } catch (error) {
+    if (error.code === 'P2025') return null;
+    throw error;
+  }
 };
 
 module.exports = {

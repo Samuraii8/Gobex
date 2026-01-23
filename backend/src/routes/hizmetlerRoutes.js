@@ -3,6 +3,8 @@ const router = express.Router();
 const hizmetlerController = require('../controllers/hizmetlerController');
 const authMiddleware = require('../middleware/authMiddleware');
 const { upload, handleUploadError } = require('../middleware/uploadMiddleware');
+const validate = require('../middleware/validationMiddleware');
+const { hizmetSchemas } = require('../validations/schemas');
 
 router.get('/', hizmetlerController.getAllHizmetler);
 
@@ -11,6 +13,7 @@ router.post('/',
     authMiddleware,
     upload.single('resim'),
     handleUploadError,
+    validate(hizmetSchemas.createUpdate),
     hizmetlerController.createHizmet
 );
 
@@ -19,6 +22,7 @@ router.put('/:id',
     authMiddleware,
     upload.single('resim'),
     handleUploadError,
+    validate(hizmetSchemas.createUpdate),
     hizmetlerController.updateHizmet
 );
 

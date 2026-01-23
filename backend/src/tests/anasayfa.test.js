@@ -1,6 +1,6 @@
 const request = require('supertest');
 const app = require('../app');
-const { AnaSayfa, Admin, sequelize } = require('../models');
+const prisma = require('../utils/prismaClient');
 const bcrypt = require('bcryptjs');
 
 let token;
@@ -10,10 +10,12 @@ describe('AnaSayfa API', () => {
   beforeAll(async () => {
     // Admin girişi yap ve token al
     const hashedPassword = await bcrypt.hash('123456', 10);
-    await Admin.destroy({ where: { ad: 'testadmin_anasayfa' } });
-    await Admin.create({
-      ad: 'testadmin_anasayfa',
-      sifre: hashedPassword
+    await prisma.admin.deleteMany({ where: { ad: 'testadmin_anasayfa' } });
+    await prisma.admin.create({
+      data: {
+        ad: 'testadmin_anasayfa',
+        sifre: hashedPassword
+      }
     });
 
     const loginRes = await request(app)
@@ -23,9 +25,9 @@ describe('AnaSayfa API', () => {
   });
 
   afterAll(async () => {
-    await Admin.destroy({ where: { ad: 'testadmin_anasayfa' } });
-    if (createdId) await AnaSayfa.destroy({ where: { id: createdId } });
-    await sequelize.close();
+    await prisma.admin.deleteMany({ where: { ad: 'testadmin_anasayfa' } });
+    if (createdId) await prisma.anaSayfa.deleteMany({ where: { id: createdId } });
+    await prisma.$disconnect();
   });
 
   it('GET /api/anasayfa - should return all data', async () => {
@@ -50,7 +52,8 @@ describe('AnaSayfa API', () => {
     const res = await request(app)
       .put(`/api/anasayfa/${createdId}`)
       .set('Authorization', `Bearer ${token}`)
-      .field('baslik', 'Güncellenmiş Başlık');
+      .field('baslik', 'Güncellenmiş Başlık')
+      .field('icerik', 'Güncellenmiş İçerik Testi');
 
     expect(res.statusCode).toEqual(200);
     expect(res.body.baslik).toEqual('Güncellenmiş Başlık');

@@ -3,6 +3,8 @@ const router = express.Router();
 const rateLimit = require('express-rate-limit');
 const iletisimController = require('../controllers/iletisimController');
 const authMiddleware = require('../middleware/authMiddleware');
+const validate = require('../middleware/validationMiddleware');
+const { iletisimSchemas } = require('../validations/schemas');
 
 // İletişim formu için özel sert rate limiter (spam koruması)
 const contactFormLimiter = rateLimit({
@@ -19,7 +21,7 @@ const contactFormLimiter = rateLimit({
 // ===== PUBLIC ROUTES (Rate Limited) =====
 
 // POST - İletişim formu gönderimi (Sert rate limit)
-router.post('/', contactFormLimiter, iletisimController.createIletisim);
+router.post('/', contactFormLimiter, validate(iletisimSchemas.create), iletisimController.createIletisim);
 
 // ===== ADMIN ROUTES (JWT Protected) =====
 
@@ -36,3 +38,4 @@ router.delete('/:id', authMiddleware, iletisimController.deleteIletisim);
 router.delete('/', authMiddleware, iletisimController.deleteMultipleIletisim);
 
 module.exports = router;
+

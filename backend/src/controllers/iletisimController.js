@@ -6,7 +6,8 @@ const getAllIletisim = async (req, res) => {
         const data = await iletisimService.getAllIletisim();
         res.status(200).json(data);
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        console.error('GetAllIletisim Error:', error);
+        res.status(500).json({ message: 'Mesajlar getirilirken bir hata oluştu.' });
     }
 };
 
@@ -21,7 +22,8 @@ const getIletisimById = async (req, res) => {
             res.status(404).json({ message: 'Mesaj bulunamadı.' });
         }
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        console.error('GetIletisimById Error:', error);
+        res.status(500).json({ message: 'Mesaj detayı getirilirken bir hata oluştu.' });
     }
 };
 
@@ -29,20 +31,6 @@ const getIletisimById = async (req, res) => {
 const createIletisim = async (req, res) => {
     try {
         const { adSoyad, ePosta, konu, mesaj } = req.body;
-
-        // Temel validasyon
-        if (!adSoyad || !ePosta || !konu || !mesaj) {
-            return res.status(400).json({
-                message: 'Tüm alanlar zorunludur.',
-                required: ['adSoyad', 'ePosta', 'konu', 'mesaj']
-            });
-        }
-
-        // E-posta format kontrolü
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRegex.test(ePosta)) {
-            return res.status(400).json({ message: 'Geçerli bir e-posta adresi giriniz.' });
-        }
 
         const data = await iletisimService.createIletisim({
             adSoyad: adSoyad.trim(),
@@ -56,11 +44,9 @@ const createIletisim = async (req, res) => {
             id: data.id
         });
     } catch (error) {
-        // Sequelize validation hataları
-        if (error.name === 'SequelizeValidationError') {
-            const messages = error.errors.map(e => e.message);
-            return res.status(400).json({ message: messages.join(' ') });
-        }
+        console.error('CreateIletisim Error:', error);
+        // Sequelize validation hataları (eğer Joi'den kaçarsa)
+
         res.status(500).json({ message: 'Mesaj gönderilemedi. Lütfen daha sonra tekrar deneyin.' });
     }
 };
@@ -75,7 +61,8 @@ const deleteIletisim = async (req, res) => {
         }
         res.status(204).send();
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        console.error('DeleteIletisim Error:', error);
+        res.status(500).json({ message: 'Mesaj silinirken bir hata oluştu.' });
     }
 };
 
@@ -94,7 +81,8 @@ const deleteMultipleIletisim = async (req, res) => {
             deletedCount
         });
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        console.error('DeleteMultipleIletisim Error:', error);
+        res.status(500).json({ message: 'Mesajlar silinirken bir hata oluştu.' });
     }
 };
 
@@ -105,3 +93,4 @@ module.exports = {
     deleteIletisim,
     deleteMultipleIletisim,
 };
+

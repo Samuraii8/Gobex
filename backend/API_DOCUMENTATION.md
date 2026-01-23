@@ -2,7 +2,7 @@
 
 Bu belge, Gobex Backend projesinin teknik mimarisini, veritabanı yapısını ve API endpoint'lerini detaylı olarak açıklar.
 
-**Son Güncelleme:** 12 Ocak 2026
+**Son Güncelleme:** 23 Ocak 2026
 **Base URL:** `http://localhost:3001`
 
 ---
@@ -22,7 +22,7 @@ Bu belge, Gobex Backend projesinin teknik mimarisini, veritabanı yapısını ve
 
 ## 1. Veritabanı Şeması (Models)
 
-Proje **PostgreSQL** veritabanını kullanmakta olup, **Sequelize ORM** ile yönetilmektedir.
+Proje **MySQL** veritabanını kullanmakta olup, **Prisma ORM** ile yönetilmektedir.
 
 ### 1.1. Admin Tablosu (`Tbl_Admin`)
 Yönetici girişleri için kullanılır.
@@ -155,7 +155,7 @@ Kullanıcılardan gelen iletişim formlarını saklar.
     *   Login: 10 istek / 15 dakika (Brute-force koruması).
     *   İletişim Formu: 5 istek / 1 saat (Spam koruması).
 3.  **Dosya Yükleme:**
-    *   Sadece `jpeg, jpg, png, gif, webp, svg` formatları desteklenir.
+    *   Sadece `jpeg, jpg, png, gif, webp` formatları desteklenir.
     *   Maksimum dosya boyutu: **5MB**.
     *   Dosyalar `public/images` klasöründe saklanır.
 4.  **Hata Yönetimi:** Tüm hatalar JSON formatında `{ message: "Hata detayı" }` şeklinde döner.

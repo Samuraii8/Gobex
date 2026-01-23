@@ -7,7 +7,8 @@ const getAllHizmetler = async (req, res) => {
     const data = await hizmetlerService.getAllHizmetlerData();
     res.status(200).json(data);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error('GetAllHizmetler Error:', error);
+    res.status(500).json({ message: 'Hizmetler getirilirken bir hata oluştu.' });
   }
 };
 
@@ -35,7 +36,8 @@ const createHizmet = async (req, res) => {
         fs.unlinkSync(filePath);
       }
     }
-    res.status(500).json({ message: error.message });
+    console.error('CreateHizmet Error:', error);
+    res.status(500).json({ message: 'Hizmet oluşturulurken bir hata oluştu.' });
   }
 };
 
@@ -78,7 +80,8 @@ const updateHizmet = async (req, res) => {
         fs.unlinkSync(filePath);
       }
     }
-    res.status(500).json({ message: error.message });
+    console.error('UpdateHizmet Error:', error);
+    res.status(500).json({ message: 'Hizmet güncellenirken bir hata oluştu.' });
   }
 };
 
@@ -102,7 +105,8 @@ const deleteHizmet = async (req, res) => {
 
     res.status(204).send();
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error('DeleteHizmet Error:', error);
+    res.status(500).json({ message: 'Hizmet silinirken bir hata oluştu.' });
   }
 };
 

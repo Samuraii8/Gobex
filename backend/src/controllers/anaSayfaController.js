@@ -7,7 +7,8 @@ const getAllAnaSayfaData = async (req, res) => {
     const data = await anaSayfaService.getAnaSayfaData();
     res.status(200).json(data);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error('GetAllAnaSayfaData Error:', error);
+    res.status(500).json({ message: 'Ana sayfa verileri getirilirken bir hata oluştu.' });
   }
 };
 
@@ -34,7 +35,8 @@ const createAnaSayfa = async (req, res) => {
         fs.unlinkSync(filePath);
       }
     }
-    res.status(500).json({ message: error.message });
+    console.error('CreateAnaSayfa Error:', error);
+    res.status(500).json({ message: 'Ana sayfa içeriği oluşturulurken bir hata oluştu.' });
   }
 };
 
@@ -78,7 +80,8 @@ const updateAnaSayfa = async (req, res) => {
         fs.unlinkSync(filePath);
       }
     }
-    res.status(500).json({ message: error.message });
+    console.error('UpdateAnaSayfa Error:', error);
+    res.status(500).json({ message: 'Ana sayfa içeriği güncellenirken bir hata oluştu.' });
   }
 };
 
@@ -102,7 +105,8 @@ const deleteAnaSayfa = async (req, res) => {
 
     res.status(204).send();
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error('DeleteAnaSayfa Error:', error);
+    res.status(500).json({ message: 'Ana sayfa içeriği silinirken bir hata oluştu.' });
   }
 };
 

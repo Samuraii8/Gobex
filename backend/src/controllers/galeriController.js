@@ -6,7 +6,7 @@ const getAllGaleri = async (req, res) => {
   try {
     const data = await galeriService.getAllGaleriData();
     const parsedData = data.map(item => {
-      const plainItem = item.get({ plain: true });
+      const plainItem = { ...item };
       if (plainItem.galeriDetayResimler) {
         try {
           plainItem.galeriDetayResimler = JSON.parse(plainItem.galeriDetayResimler);
@@ -18,7 +18,8 @@ const getAllGaleri = async (req, res) => {
     });
     res.status(200).json(parsedData);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error('GetAllGaleri Error:', error);
+    res.status(500).json({ message: 'Galeri verileri getirilirken bir hata oluştu.' });
   }
 };
 
@@ -27,7 +28,7 @@ const getGaleriById = async (req, res) => {
     const { id } = req.params;
     const data = await galeriService.getGaleriDataById(id);
     if (data) {
-      const plainItem = data.get({ plain: true });
+      const plainItem = { ...data };
       if (plainItem.galeriDetayResimler) {
         try {
           plainItem.galeriDetayResimler = JSON.parse(plainItem.galeriDetayResimler);
@@ -40,7 +41,8 @@ const getGaleriById = async (req, res) => {
       res.status(404).json({ message: 'Galeri öğesi bulunamadı.' });
     }
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error('GetGaleriById Error:', error);
+    res.status(500).json({ message: 'Galeri detayı getirilirken bir hata oluştu.' });
   }
 };
 
@@ -79,7 +81,8 @@ const createGaleri = async (req, res) => {
         if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
       });
     }
-    res.status(500).json({ message: error.message });
+    console.error('CreateGaleri Error:', error);
+    res.status(500).json({ message: 'Galeri öğesi oluşturulurken bir hata oluştu.' });
   }
 };
 
@@ -141,7 +144,8 @@ const updateGaleri = async (req, res) => {
         if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
       });
     }
-    res.status(500).json({ message: error.message });
+    console.error('UpdateGaleri Error:', error);
+    res.status(500).json({ message: 'Galeri öğesi güncellenirken bir hata oluştu.' });
   }
 };
 
@@ -174,7 +178,8 @@ const deleteGaleri = async (req, res) => {
 
     res.status(204).send();
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error('DeleteGaleri Error:', error);
+    res.status(500).json({ message: 'Galeri öğesi silinirken bir hata oluştu.' });
   }
 };
 
@@ -207,7 +212,8 @@ const deleteGaleriDetailImage = async (req, res) => {
     res.status(200).json({ message: 'Detay resmi silindi.', currentImages: newDetails });
 
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error('DeleteGaleriDetailImage Error:', error);
+    res.status(500).json({ message: 'Detay resmi silinirken bir hata oluştu.' });
   }
 };
 

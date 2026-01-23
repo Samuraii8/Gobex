@@ -1,6 +1,6 @@
 const request = require('supertest');
 const app = require('../app');
-const { Slider, Admin, sequelize } = require('../models');
+const prisma = require('../utils/prismaClient');
 const bcrypt = require('bcryptjs');
 
 let token;
@@ -10,10 +10,12 @@ describe('Slider API', () => {
     beforeAll(async () => {
         // Create a test admin for authentication
         const hashedPassword = await bcrypt.hash('123456', 10);
-        await Admin.destroy({ where: { ad: 'testadmin_slider' } });
-        await Admin.create({
-            ad: 'testadmin_slider',
-            sifre: hashedPassword
+        await prisma.admin.deleteMany({ where: { ad: 'testadmin_slider' } });
+        await prisma.admin.create({
+            data: {
+                ad: 'testadmin_slider',
+                sifre: hashedPassword
+            }
         });
 
         // Login to get token
@@ -25,9 +27,9 @@ describe('Slider API', () => {
 
     afterAll(async () => {
         // Clean up
-        await Admin.destroy({ where: { ad: 'testadmin_slider' } });
-        if (createdId) await Slider.destroy({ where: { id: createdId } });
-        await sequelize.close();
+        await prisma.admin.deleteMany({ where: { ad: 'testadmin_slider' } });
+        if (createdId) await prisma.slider.deleteMany({ where: { id: createdId } });
+        await prisma.$disconnect();
     });
 
     it('POST /api/slider - should create slider item', async () => {

@@ -1,9 +1,9 @@
-const { Admin } = require('../models');
+const prisma = require('../utils/prismaClient');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
 const login = async (ad, sifre) => {
-  const admin = await Admin.findOne({ where: { ad: ad } });
+  const admin = await prisma.admin.findUnique({ where: { ad: ad } });
 
   if (!admin) {
     throw new Error('Kullanıcı bulunamadı.');
@@ -18,7 +18,7 @@ const login = async (ad, sifre) => {
   const token = jwt.sign(
     { id: admin.id, ad: admin.ad },
     process.env.JWT_SECRET,
-    { expiresIn: '12h' } // Token 12 saat geçerli
+    { expiresIn: '10m' }
   );
 
   return token;
