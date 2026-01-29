@@ -4,14 +4,14 @@ const bcrypt = require('bcryptjs');
 const prisma = new PrismaClient();
 
 async function main() {
-    const adminPassword = '123456'; // Başlangıç şifresi
+    const adminPassword = 'BurakGobexİnşaat05'; // Başlangıç şifresi
     const hashedPassword = await bcrypt.hash(adminPassword, 10);
 
     const admin = await prisma.admin.upsert({
-        where: { ad: 'admin' },
+        where: { ad: 'BurakGobex01' },
         update: {},
         create: {
-            ad: 'admin',
+            ad: 'BurakGobex01',
             sifre: hashedPassword,
         },
     });

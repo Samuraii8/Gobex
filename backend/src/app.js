@@ -72,7 +72,7 @@ app.use('/api/iletisim', iletisimRoutes);
 
 
 // Simple route for health check
-app.get('/', (req, res) => {
+app.get('/api/health', (req, res) => {
   res.send('Gobex Backend is running securely!');
 });
 
