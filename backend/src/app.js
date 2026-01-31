@@ -26,20 +26,9 @@ app.use(helmet({
   },
 })); // HTTP başlıklarını güvenli hale getirir
 // CORS ayarları (Frontend ve Backend farklı domainlerde olduğu için gerekli)
-const allowedOrigins = [
-  'https://gobex.com.tr',
-  'https://www.gobex.com.tr'  // Local Vite development
-];
-
+// CORS ayarları (Frontend ve Backend farklı domainlerde olduğu için gerekli)
 app.use(cors({
-  origin: function (origin, callback) {
-    // !origin: Postman gibi araçlar veya sunucu-sunucu istekleri için izin ver
-    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
-      callback(null, true);
-    } else {
-      callback(new Error('CORS policy violation'));
-    }
-  },
+  origin: ['https://gobex.com.tr', 'https://www.gobex.com.tr'],
   credentials: true
 }));
 
