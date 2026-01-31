@@ -25,7 +25,7 @@ app.use(helmet({
     },
   },
 })); // HTTP başlıklarını güvenli hale getirir
-app.use(cors()); // CORS politikaları (Geliştirme için açık, canlıda domain belirtilmeli)
+app.use(cors({ origin: 'https://gobex.com.tr', credentials: true })); // CORS politikaları (Geliştirme için açık, canlıda domain belirtilmeli)
 
 // Body Parser Limit (DoS koruması için)
 app.use(express.json({ limit: '10kb' }));
