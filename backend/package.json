@@ -5,7 +5,7 @@
   "main": "src/server.js",
   "scripts": {
     "postinstall": "npx prisma generate",
-    "start": "node src/server.js",
+    "start": "nodemon src/server.js",
     "dev": "nodemon src/server.js",
     "test": "jest --detectOpenHandles"
   },
@@ -16,6 +16,7 @@
   "dependencies": {
     "@prisma/client": "^5.22.0",
     "prisma": "^5.22.0",
+    "nodemon": "^3.1.11",
     "bcryptjs": "^3.0.3",
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
@@ -28,7 +29,6 @@
   },
   "devDependencies": {
     "jest": "^30.2.0",
-    "nodemon": "^3.1.11",
     "supertest": "^7.2.2"
   },
   "prisma": {
