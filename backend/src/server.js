@@ -1,7 +1,7 @@
 const app = require('./app');
 const prisma = require('./utils/prismaClient');
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3001;
 
 app.listen(PORT, async () => {
   console.log(`Server is running on port ${PORT}`);
