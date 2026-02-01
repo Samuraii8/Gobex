@@ -32,8 +32,10 @@ app.use(helmet({
 // CORS ayarları (Frontend ve Backend farklı domainlerde olduğu için gerekli)
 // CORS ayarları (Frontend ve Backend farklı domainlerde olduğu için gerekli)
 app.use(cors({
-  origin: ['https://gobex.com.tr', 'https://www.gobex.com.tr'],
-  credentials: true
+  origin: '*', // Her yerden erişimi açtık
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], // Tüm metodlara izin
+  allowedHeaders: ['Content-Type', 'Authorization'], // Başlıklara izin
+  optionsSuccessStatus: 200
 }));
 
 // Body Parser Limit (DoS koruması için)
