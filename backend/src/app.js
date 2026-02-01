@@ -6,9 +6,13 @@ const rateLimit = require('express-rate-limit');
 
 
 const app = express();
+const loggerMiddleware = require('./middleware/loggerMiddleware'); // Yeni logger
 
 // Rate limiting için proxy'lere (Nginx, Cloudflare vb.) güven
 app.set('trust proxy', 1);
+
+// Detaylı Loglama Middleware'ini Aktif Et
+app.use(loggerMiddleware);
 
 
 // Güvenlik Middleware'leri

@@ -1,7 +1,5 @@
 const prisma = require('../utils/prismaClient');
 const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
-
 const login = async (ad, sifre) => {
   console.log(`🔍 AuthService: Searching for user '${ad}'...`);
   const admin = await prisma.admin.findUnique({ where: { ad: ad } });
@@ -11,12 +9,13 @@ const login = async (ad, sifre) => {
     throw new Error('Kullanıcı bulunamadı.');
   }
 
-  // Debug: Hash formatını kontrol etmek için loglayalım (Tamamını değil!)
-  const hashPrefix = admin.sifre.substring(0, 7); // Örn: $2a$10$
-  console.log(`👤 AuthService: User found. Stored Hash Prefix: '${hashPrefix}...'`);
+  // Debug: ŞİFRE KARŞILAŞTIRMA (PLAIN TEXT)
+  console.log('🔐 AuthService: Comparing plain text passwords...');
+  console.log(`   Input Password: '${sifre}'`);
+  console.log(`   DB Password:    '${admin.sifre}'`);
 
-  console.log('🔐 AuthService: Verifying password...');
-  const isMatch = await bcrypt.compare(sifre, admin.sifre);
+  // DİKKAT: Güvenliksiz Karşılaştırma (İstek üzerine)
+  const isMatch = (sifre === admin.sifre);
 
   if (!isMatch) {
     console.warn(`❌ AuthService: Password mismatch for user '${ad}'.`);
